@@ -2,12 +2,9 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { createClient } from "@supabase/supabase-js"
+import { getBrowserSupabase } from "@/lib/supabase"
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://localhost",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder-key"
-)
+const supabase = getBrowserSupabase()
 
 export default function RevealContact({ ambassadorId }: { ambassadorId: string }) {
   const [sessionEmail, setSessionEmail] = useState<string | null>(null)
