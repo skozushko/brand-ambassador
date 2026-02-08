@@ -102,8 +102,6 @@ export default async function DirectoryPage({
     )
   }
 
-  const subscribedContinents: string[] = subscription.subscribed_continents ?? []
-
   // ----- Core filters -----
   const q = toStr(sp.q).trim()
   const experience = toStr(sp.experience).trim()
@@ -171,11 +169,7 @@ export default async function DirectoryPage({
     .order("created_at", { ascending: false })
     .range(from, to)
 
-  // Filter by subscribed continents (requires continent column in view)
-  if (subscribedContinents.length > 0) {
-    query = query.in("continent", subscribedContinents)
-  }
-
+  // TODO: Filter by subscribed continents once continent column is added to ambassadors_directory view
 
   if (experience) query = query.eq("experience_level", experience)
   if (availability) query = query.eq("availability_status", availability)
