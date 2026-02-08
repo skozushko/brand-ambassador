@@ -4,12 +4,9 @@ export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { createClient } from "@supabase/supabase-js"
+import { getBrowserSupabase } from "@/lib/supabase"
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://localhost",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder-key"
-)
+const supabase = getBrowserSupabase()
 
 export default function LoginPage() {
   const [email, setEmail] = useState("skozushko@gmail.com")
@@ -31,13 +28,20 @@ export default function LoginPage() {
 
   const signInWithPassword = async () => {
     setStatus("")
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setStatus(error.message)
     } else {
+      // POST session tokens to server so it can set HttpOnly-safe cookies
+      await fetch("/api/auth/set-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_token: data.session!.access_token,
+          refresh_token: data.session!.refresh_token,
+        }),
+      })
       setStatus("Signed in! Redirecting...")
-      await refresh()
-      // Redirect to directory after successful login
       window.location.href = "/directory"
     }
   }
