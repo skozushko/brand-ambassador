@@ -4,14 +4,12 @@ export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { createClient } from "@supabase/supabase-js"
+import { getBrowserSupabase } from "@/lib/supabase"
+import { COUNTRIES, US_STATES, CANADA_PROVINCES } from "@/lib/geo-data"
 
 type Option = { id: number; name: string }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://localhost",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder-key"
-)
+const supabase = getBrowserSupabase()
 
 export default function SignupPage() {
   const [form, setForm] = useState({
@@ -248,20 +246,44 @@ export default function SignupPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">State / Region</label>
-            <input
-              className="mt-1 w-full border rounded-md p-2"
-              value={form.state_region}
-              onChange={(e) => update("state_region", e.target.value)}
-            />
-          </div>
-          <div>
             <label className="block text-sm font-medium">Country</label>
-            <input
+            <select
               className="mt-1 w-full border rounded-md p-2"
               value={form.country}
-              onChange={(e) => update("country", e.target.value)}
-            />
+              onChange={(e) => { update("country", e.target.value); update("state_region", "") }}
+            >
+              <option value="">Select country…</option>
+              {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium">State / Province / Region</label>
+            {form.country === "United States" ? (
+              <select
+                className="mt-1 w-full border rounded-md p-2"
+                value={form.state_region}
+                onChange={(e) => update("state_region", e.target.value)}
+              >
+                <option value="">Select state…</option>
+                {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            ) : form.country === "Canada" ? (
+              <select
+                className="mt-1 w-full border rounded-md p-2"
+                value={form.state_region}
+                onChange={(e) => update("state_region", e.target.value)}
+              >
+                <option value="">Select province…</option>
+                {CANADA_PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            ) : (
+              <input
+                className="mt-1 w-full border rounded-md p-2"
+                value={form.state_region}
+                onChange={(e) => update("state_region", e.target.value)}
+                placeholder="State / province / region"
+              />
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium">Timezone</label>
