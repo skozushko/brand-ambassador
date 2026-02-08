@@ -6,7 +6,8 @@
 
 import FiltersSidebar from "./FiltersSidebar"
 import Link from "next/link"
-import { getSupabase, getServerSupabase } from "@/lib/supabase"
+import { getSupabase } from "@/lib/supabase"
+import { getServerSupabase } from "@/lib/supabase-server"
 
 type SearchParams = Record<string, string | string[] | undefined>
 
