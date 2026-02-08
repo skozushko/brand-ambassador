@@ -7,7 +7,7 @@ export default function Home() {
         {/* Header with navigation */}
         <div className="flex items-center justify-end gap-4 mb-12">
           <Link className="text-sm hover:underline" href="/login">
-            Login
+            Agency Login
           </Link>
         </div>
 
