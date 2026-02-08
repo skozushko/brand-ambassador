@@ -89,11 +89,11 @@ export default function Home() {
         {/* Footer Info */}
         <div className="mt-16 text-center text-sm text-gray-500">
           <p>
-            For staffing agencies and brands,{" "}
-            <Link href="/directory" className="underline hover:text-gray-700">
-              browse our directory
-            </Link>{" "}
-            to find talented ambassadors.
+            Are you a staffing agency or brand?{" "}
+            <Link href="/request-access" className="underline hover:text-gray-700">
+              Request access to our directory
+            </Link>
+            .
           </p>
         </div>
       </div>
