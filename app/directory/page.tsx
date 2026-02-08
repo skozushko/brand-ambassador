@@ -6,7 +6,7 @@
 
 import FiltersSidebar from "./FiltersSidebar"
 import Link from "next/link"
-import { getSupabase } from "@/lib/supabase"
+import { getSupabase, getServerSupabase } from "@/lib/supabase"
 
 type SearchParams = Record<string, string | string[] | undefined>
 
@@ -59,6 +59,49 @@ export default async function DirectoryPage({
 }) {
   const supabase = getSupabase()
   const sp = await searchParams
+
+  // ----- Auth & subscription gate -----
+  const serverSupabase = await getServerSupabase()
+  const { data: { user } } = await serverSupabase.auth.getUser()
+
+  if (!user) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold mb-3">Agency Access Required</h1>
+          <p className="text-gray-600 mb-6">You must be logged in to view the directory.</p>
+          <Link href="/login" className="bg-black text-white rounded-md px-6 py-3 font-semibold">
+            Log In
+          </Link>
+        </div>
+      </main>
+    )
+  }
+
+  const { data: subscription } = await serverSupabase
+    .from("agency_subscriptions")
+    .select("status, subscribed_continents")
+    .eq("agency_user_id", user.id)
+    .eq("status", "active")
+    .maybeSingle()
+
+  if (!subscription) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center">
+        <div className="text-center p-8 max-w-md">
+          <h1 className="text-2xl font-bold mb-3">Subscription Required</h1>
+          <p className="text-gray-600 mb-6">
+            Subscribe to access the brand ambassador directory. Plans start at $500/month per region.
+          </p>
+          <Link href="/subscribe" className="bg-black text-white rounded-md px-6 py-3 font-semibold">
+            View Plans
+          </Link>
+        </div>
+      </main>
+    )
+  }
+
+  const subscribedContinents: string[] = subscription.subscribed_continents ?? []
 
   // ----- Core filters -----
   const q = toStr(sp.q).trim()
@@ -126,6 +169,11 @@ export default async function DirectoryPage({
     .select("*")
     .order("created_at", { ascending: false })
     .range(from, to)
+
+  // Filter by subscribed continents (requires continent column in view)
+  if (subscribedContinents.length > 0) {
+    query = query.in("continent", subscribedContinents)
+  }
 
 
   if (experience) query = query.eq("experience_level", experience)
