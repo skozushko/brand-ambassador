@@ -8,16 +8,19 @@ import { getBrowserSupabase } from "@/lib/supabase"
 
 const supabase = getBrowserSupabase()
 
-const CONTINENT_PLANS = [
-  { name: "North America", price: 500 },
-  { name: "South America", price: 500 },
-  { name: "Europe", price: 500 },
-  { name: "Africa", price: 500 },
-  { name: "Asia", price: 500 },
-  { name: "Oceania", price: 500 },
+// TODO: Fill in stripePrice with your Stripe Price IDs from Stripe Dashboard
+const REGION_PLANS = [
+  { name: "United States", price: 500, stripePrice: "price_xxx" },
+  { name: "Canada", price: 500, stripePrice: "price_xxx" },
+  { name: "Mexico", price: 500, stripePrice: "price_xxx" },
+  { name: "South America", price: 500, stripePrice: "price_xxx" },
+  { name: "Europe", price: 500, stripePrice: "price_xxx" },
+  { name: "Africa", price: 500, stripePrice: "price_xxx" },
+  { name: "Asia", price: 500, stripePrice: "price_xxx" },
+  { name: "Oceania", price: 500, stripePrice: "price_xxx" },
 ]
 
-const WORLD_PLAN = { name: "World (All Regions)", price: 1000 }
+const WORLD_PLAN = { name: "World (All Regions)", price: 1500, stripePrice: "price_xxx" }
 
 export default function SubscribePage() {
   const [sessionEmail, setSessionEmail] = useState<string | null>(null)
@@ -47,6 +50,25 @@ export default function SubscribePage() {
   const total = worldSelected
     ? WORLD_PLAN.price
     : selected.length * 500
+
+  const handleCheckout = async () => {
+    const priceIds = worldSelected
+      ? [WORLD_PLAN.stripePrice]
+      : selected.map((name) => REGION_PLANS.find((p) => p.name === name)!.stripePrice)
+
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceIds }),
+    })
+
+    if (res.ok) {
+      const { url } = await res.json()
+      window.location.href = url
+    } else {
+      alert("Checkout failed. Please try again.")
+    }
+  }
 
   if (loading) {
     return (
@@ -83,7 +105,7 @@ export default function SubscribePage() {
         </p>
 
         <div className="mt-8 grid gap-3">
-          {CONTINENT_PLANS.map((plan) => (
+          {REGION_PLANS.map((plan) => (
             <label
               key={plan.name}
               className={`flex items-center justify-between border rounded-lg p-4 cursor-pointer transition-colors ${
@@ -122,7 +144,7 @@ export default function SubscribePage() {
               />
               <div>
                 <span className="font-semibold">{WORLD_PLAN.name}</span>
-                <div className="text-sm text-gray-500">Access to all 6 regions</div>
+                <div className="text-sm text-gray-500">Access to all 8 regions</div>
               </div>
             </div>
             <span className="text-gray-600">${WORLD_PLAN.price.toLocaleString()}/month</span>
@@ -137,7 +159,7 @@ export default function SubscribePage() {
           <button
             className="bg-black text-white rounded-md px-6 py-3 font-semibold disabled:opacity-40"
             disabled={total === 0}
-            onClick={() => alert("Stripe checkout coming soon — payment processing is being set up.")}
+            onClick={handleCheckout}
           >
             Subscribe
           </button>
