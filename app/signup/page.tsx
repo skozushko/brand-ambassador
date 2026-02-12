@@ -210,15 +210,26 @@ export default function SignupPage() {
       return
     }
 
-    let ambassadorId: string | null = null
+    const ambassadorId = crypto.randomUUID()
     let headshotPath: string | null = null
     let videoPath: string | null = null
 
     try {
-      // 1. Insert ambassador row
+      // 1. Upload headshot
+      setUploadStep("Uploading headshot...")
+      headshotPath = `photos/${ambassadorId}.${fileExt(headshotFile)}`
+      const headshotUrl = await uploadFile("headshots", headshotPath, headshotFile)
+
+      // 2. Upload video
+      setUploadStep("Uploading video...")
+      videoPath = `videos/${ambassadorId}.${fileExt(videoFile)}`
+      const videoUrl = await uploadFile("intro-videos", videoPath, videoFile)
+
+      // 3. Insert ambassador row with media URLs (required by DB NOT NULL constraints)
       setUploadStep("Saving your profile...")
 
       const payload: any = {
+        id: ambassadorId,
         ...form,
         full_name: form.full_name.trim(),
         email: form.email.trim().toLowerCase(),
@@ -229,48 +240,16 @@ export default function SignupPage() {
         country: form.country.trim() || null,
         timezone: form.timezone.trim() || null,
         bio: form.bio.trim() || null,
+        headshot_url: headshotUrl,
+        video_url: videoUrl,
         last_active_at: new Date().toISOString(),
       }
 
-      const { data: inserted, error: insertError } = await supabase
-        .from("ambassadors")
-        .insert([payload])
-        .select("id")
-        .single()
+      const { error: insertError } = await supabase.from("ambassadors").insert([payload])
 
-      if (insertError || !inserted?.id) {
-        setStatus({ type: "error", msg: insertError?.message ?? "Insert failed" })
-        setLoading(false)
-        setUploadStep("")
-        return
-      }
-
-      ambassadorId = inserted.id as string
-
-      // 2. Upload headshot
-      setUploadStep("Uploading headshot...")
-      headshotPath = `photos/${ambassadorId}.${fileExt(headshotFile)}`
-      const headshotUrl = await uploadFile("headshots", headshotPath, headshotFile)
-
-      // 3. Upload video
-      setUploadStep("Uploading video...")
-      videoPath = `videos/${ambassadorId}.${fileExt(videoFile)}`
-      const videoUrl = await uploadFile("intro-videos", videoPath, videoFile)
-
-      // 4. Save URLs via RPC
-      setUploadStep("Finalizing media...")
-      const { error: rpcError } = await supabase.rpc("set_ambassador_media", {
-        p_id: ambassadorId,
-        p_headshot_url: headshotUrl,
-        p_video_url: videoUrl,
-      })
-
-      if (rpcError) {
+      if (insertError) {
         await rollbackSignupMediaAndProfile(ambassadorId, headshotPath, videoPath)
-        setStatus({
-          type: "error",
-          msg: "Could not finalize required media. Please try again. " + rpcError.message,
-        })
+        setStatus({ type: "error", msg: insertError.message })
         setLoading(false)
         setUploadStep("")
         return
