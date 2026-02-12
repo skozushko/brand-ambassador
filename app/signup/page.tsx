@@ -52,6 +52,7 @@ export default function SignupPage() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoPreview, setVideoPreview] = useState<string | null>(null)
   const [uploadStep, setUploadStep] = useState("")
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const headshotRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLInputElement>(null)
@@ -200,6 +201,7 @@ export default function SignupPage() {
     setLoading(true)
     setStatus({ type: "idle" })
     setUploadStep("")
+    setUploadProgress(0)
 
     // Validate files are selected
     if (!headshotFile) {
@@ -220,19 +222,23 @@ export default function SignupPage() {
     try {
       // 1. Upload headshot
       setUploadStep("Uploading headshot...")
+      setUploadProgress(15)
       headshotPath = `photos/${ambassadorId}.${fileExt(headshotFile)}`
       const headshotUrl = await uploadFile("headshots", headshotPath, headshotFile)
 
       // 2. Upload video
-      setUploadStep("Uploading video...")
+      setUploadStep("Uploading video... this can take up to a minute on slower connections.")
+      setUploadProgress(35)
       videoPath = `videos/${ambassadorId}.${fileExt(videoFile)}`
       const videoUrl = await uploadFile("intro-videos", videoPath, videoFile)
       if (!headshotUrl || !videoUrl) {
         throw new Error("Missing media URL after upload. Please retry.")
       }
+      setUploadProgress(80)
 
       // 3. Insert ambassador row with media URLs (required by DB NOT NULL constraints)
       setUploadStep("Saving your profile...")
+      setUploadProgress(90)
 
       const payload: any = {
         id: ambassadorId,
@@ -258,6 +264,7 @@ export default function SignupPage() {
         setStatus({ type: "error", msg: insertError.message })
         setLoading(false)
         setUploadStep("")
+        setUploadProgress(0)
         return
       }
     } catch (err: unknown) {
@@ -266,11 +273,13 @@ export default function SignupPage() {
       setStatus({ type: "error", msg: message })
       setLoading(false)
       setUploadStep("")
+      setUploadProgress(0)
       return
     }
 
     // 5. Insert join tables (roles/skills/languages)
     setUploadStep("Saving roles & skills...")
+    setUploadProgress(95)
 
     const joins: Promise<any>[] = []
 
@@ -317,9 +326,11 @@ export default function SignupPage() {
       })
       setLoading(false)
       setUploadStep("")
+      setUploadProgress(0)
       return
     }
 
+    setUploadProgress(100)
     setStatus({ type: "ok", msg: "Submitted! View it in the Directory." })
     setForm({
       full_name: "",
@@ -351,6 +362,7 @@ export default function SignupPage() {
     if (videoRef.current) videoRef.current.value = ""
     setLoading(false)
     setUploadStep("")
+    setUploadProgress(0)
   }
 
   return (
@@ -656,7 +668,16 @@ export default function SignupPage() {
         </button>
 
         {uploadStep && loading && (
-          <div className="text-sm text-gray-600">{uploadStep}</div>
+          <div className="w-full max-w-md">
+            <div className="text-sm text-gray-600">{uploadStep}</div>
+            <div className="mt-2 h-2 w-full rounded-full bg-gray-200 overflow-hidden">
+              <div
+                className="h-full bg-black transition-all duration-700"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <div className="mt-1 text-xs text-gray-500">{uploadProgress}%</div>
+          </div>
         )}
 
         {status.type === "ok" && <div className="text-green-700">{status.msg}</div>}
