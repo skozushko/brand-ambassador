@@ -8,6 +8,7 @@ import FiltersSidebar from "./FiltersSidebar"
 import Link from "next/link"
 import { getSupabase } from "@/lib/supabase"
 import { getServerSupabase } from "@/lib/supabase-server"
+import { syncSubscriptionFromCheckoutSession } from "@/lib/stripe-subscriptions"
 
 type SearchParams = Record<string, string | string[] | undefined>
 
@@ -53,6 +54,18 @@ function buildHref(sp: SearchParams, patch: Record<string, string | null>) {
   return qs ? `/directory?${qs}` : `/directory`
 }
 
+async function getLatestSubscription(serverSupabase: Awaited<ReturnType<typeof getServerSupabase>>, userId: string) {
+  const { data } = await serverSupabase
+    .from("agency_subscriptions")
+    .select("status, subscribed_continents")
+    .eq("agency_user_id", userId)
+    .in("status", ["active", "trialing"])
+    .order("updated_at", { ascending: false })
+    .limit(1)
+
+  return data?.[0] ?? null
+}
+
 export default async function DirectoryPage({
   searchParams,
 }: {
@@ -79,12 +92,24 @@ export default async function DirectoryPage({
     )
   }
 
-  const { data: subscription } = await serverSupabase
-    .from("agency_subscriptions")
-    .select("status, subscribed_continents")
-    .eq("agency_user_id", user.id)
-    .eq("status", "active")
-    .maybeSingle()
+  let subscription = await getLatestSubscription(serverSupabase, user.id)
+
+  if (!subscription) {
+    const isCheckoutSuccess = toStr(sp.success) === "true"
+    const sessionId = toStr(sp.session_id).trim()
+
+    // Fallback for delayed/missed webhooks: sync directly from successful checkout session.
+    if (isCheckoutSuccess && sessionId) {
+      try {
+        await syncSubscriptionFromCheckoutSession(sessionId, user.id)
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error"
+        console.error("Stripe post-checkout sync failed:", message)
+      }
+
+      subscription = await getLatestSubscription(serverSupabase, user.id)
+    }
+  }
 
   if (!subscription) {
     return (

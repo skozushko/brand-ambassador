@@ -22,7 +22,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Create Stripe Checkout Session
+    const originHeader = request.headers.get("origin")
+    const forwardedHost = request.headers.get("x-forwarded-host")
+    const host = forwardedHost || request.headers.get("host")
+    const forwardedProto = request.headers.get("x-forwarded-proto")
+    const proto = forwardedProto || (host?.includes("localhost") ? "http" : "https")
+    const fallbackSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+    const siteUrl = originHeader || (host ? `${proto}://${host}` : fallbackSiteUrl)
+
     const session = await stripe.checkout.sessions.create({
       customer_email: user.email,
       mode: "subscription",
@@ -30,16 +37,17 @@ export async function POST(request: NextRequest) {
         price: priceId,
         quantity: 1,
       })),
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/directory?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/subscribe?canceled=true`,
+      success_url: `${siteUrl}/directory?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/subscribe?canceled=true`,
       metadata: {
         user_id: user.id,
       },
     })
 
     return NextResponse.json({ url: session.url })
-  } catch (error: any) {
-    console.error("Stripe checkout error:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error"
+    console.error("Stripe checkout error:", message)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

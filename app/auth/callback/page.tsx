@@ -4,12 +4,9 @@ export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
+import { getBrowserSupabase } from "@/lib/supabase"
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://localhost",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder-key"
-)
+const supabase = getBrowserSupabase()
 
 export default function Page() {
   const router = useRouter()
