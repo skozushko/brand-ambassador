@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 import { createClient } from "@supabase/supabase-js"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia",
-})
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 // Use service role for webhook (needs to bypass RLS)
 const supabaseAdmin = createClient(
@@ -100,14 +98,15 @@ export async function POST(request: NextRequest) {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice
-        if (invoice.subscription) {
+        const subId = (invoice as any).subscription as string | null
+        if (subId) {
           await supabaseAdmin
             .from("agency_subscriptions")
             .update({
               status: "past_due",
               updated_at: new Date().toISOString(),
             })
-            .eq("stripe_subscription_id", invoice.subscription as string)
+            .eq("stripe_subscription_id", subId)
         }
         break
       }
