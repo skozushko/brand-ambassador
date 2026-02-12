@@ -22,13 +22,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const originHeader = request.headers.get("origin")
-    const forwardedHost = request.headers.get("x-forwarded-host")
-    const host = forwardedHost || request.headers.get("host")
-    const forwardedProto = request.headers.get("x-forwarded-proto")
-    const proto = forwardedProto || (host?.includes("localhost") ? "http" : "https")
-    const fallbackSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-    const siteUrl = originHeader || (host ? `${proto}://${host}` : fallbackSiteUrl)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
 
     const session = await stripe.checkout.sessions.create({
       customer_email: user.email,
