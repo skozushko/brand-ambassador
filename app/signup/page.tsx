@@ -173,6 +173,9 @@ export default function SignupPage() {
     if (error) throw new Error(`Upload to ${bucket} failed: ${error.message}`)
 
     const { data } = supabase.storage.from(bucket).getPublicUrl(path)
+    if (!data?.publicUrl) {
+      throw new Error(`Could not generate public URL for ${bucket}/${path}`)
+    }
     return data.publicUrl
   }
 
@@ -224,6 +227,9 @@ export default function SignupPage() {
       setUploadStep("Uploading video...")
       videoPath = `videos/${ambassadorId}.${fileExt(videoFile)}`
       const videoUrl = await uploadFile("intro-videos", videoPath, videoFile)
+      if (!headshotUrl || !videoUrl) {
+        throw new Error("Missing media URL after upload. Please retry.")
+      }
 
       // 3. Insert ambassador row with media URLs (required by DB NOT NULL constraints)
       setUploadStep("Saving your profile...")
