@@ -9,6 +9,7 @@ import Link from "next/link"
 import { getSupabase } from "@/lib/supabase"
 import { getServerSupabase } from "@/lib/supabase-server"
 import { syncSubscriptionFromCheckoutSession } from "@/lib/stripe-subscriptions"
+import { getAllowedCountries } from "@/lib/region-countries"
 
 type SearchParams = Record<string, string | string[] | undefined>
 
@@ -127,6 +128,10 @@ export default async function DirectoryPage({
     )
   }
 
+  // ----- Subscription region filtering -----
+  const subscribedRegions: string[] = subscription.subscribed_continents ?? []
+  const allowedCountries = getAllowedCountries(subscribedRegions)
+
   // ----- Core filters -----
   const q = toStr(sp.q).trim()
   const experience = toStr(sp.experience).trim()
@@ -172,10 +177,13 @@ export default async function DirectoryPage({
   const countrySet = new Set<string>()
   const statesByCountry = new Map<string, Set<string>>()
 
+  const allowedSet = new Set(allowedCountries)
+
   ;(locRows ?? []).forEach((r: any) => {
     const c = (r.country ?? "").trim()
     const s = (r.state_region ?? "").trim()
     if (!c) return
+    if (allowedSet.size > 0 && !allowedSet.has(c)) return
     countrySet.add(c)
     if (!statesByCountry.has(c)) statesByCountry.set(c, new Set())
     if (s) statesByCountry.get(c)!.add(s)
@@ -194,7 +202,10 @@ export default async function DirectoryPage({
     .order("created_at", { ascending: false })
     .range(from, to)
 
-  // TODO: Filter by subscribed continents once continent column is added to ambassadors_directory view
+  // Filter by subscribed regions
+  if (allowedCountries.length > 0) {
+    query = query.in("country", allowedCountries)
+  }
 
   if (experience) query = query.eq("experience_level", experience)
   if (availability) query = query.eq("availability_status", availability)
