@@ -42,6 +42,8 @@ const REGION_COUNTRIES: Record<string, string[]> = {
     "Turkmenistan", "United Arab Emirates", "Uzbekistan", "Vietnam", "Yemen",
   ],
   Oceania: ["Australia", "New Zealand"],
+  // Backward-compatible alias for manually-created subscription records
+  "North America": ["United States", "Canada", "Mexico"],
 }
 
 /**
