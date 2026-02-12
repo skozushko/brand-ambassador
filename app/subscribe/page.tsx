@@ -8,19 +8,18 @@ import { getBrowserSupabase } from "@/lib/supabase"
 
 const supabase = getBrowserSupabase()
 
-// TODO: Fill in stripePrice with your Stripe Price IDs from Stripe Dashboard
 const REGION_PLANS = [
-  { name: "United States", price: 500, stripePrice: "price_xxx" },
-  { name: "Canada", price: 500, stripePrice: "price_xxx" },
-  { name: "Mexico", price: 500, stripePrice: "price_xxx" },
-  { name: "South America", price: 500, stripePrice: "price_xxx" },
-  { name: "Europe", price: 500, stripePrice: "price_xxx" },
-  { name: "Africa", price: 500, stripePrice: "price_xxx" },
-  { name: "Asia", price: 500, stripePrice: "price_xxx" },
-  { name: "Oceania", price: 500, stripePrice: "price_xxx" },
+  { name: "United States", price: 500, stripePrice: "price_1SylbaA65ZHQkXqw8kvz30sS" },
+  { name: "Canada", price: 500, stripePrice: "price_1Sylc9A65ZHQkXqw7G6jgFDq" },
+  { name: "Mexico", price: 500, stripePrice: "price_1SyldmA65ZHQkXqw2pnqLGU4" },
+  { name: "South America", price: 500, stripePrice: "price_1SyldUA65ZHQkXqwUGrgvrRc" },
+  { name: "Europe", price: 500, stripePrice: "price_1SyleXA65ZHQkXqw1oxWNegx" },
+  { name: "Africa", price: 500, stripePrice: "price_1SzpeBA65ZHQkXqwNTpes7y4" },
+  { name: "Asia", price: 500, stripePrice: "price_1SylenA65ZHQkXqwO2YFb6q7" },
+  { name: "Oceania", price: 500, stripePrice: "price_1SylcrA65ZHQkXqwzw1uxPoR" },
 ]
 
-const WORLD_PLAN = { name: "World (All Regions)", price: 1500, stripePrice: "price_xxx" }
+const WORLD_PLAN = { name: "World (All Regions)", price: 1500, stripePrice: "price_1Sylf2A65ZHQkXqwkJGuD1ui" }
 
 export default function SubscribePage() {
   const [sessionEmail, setSessionEmail] = useState<string | null>(null)
