@@ -19,25 +19,17 @@ function fileExt(file: File) {
   return file.name.split(".").pop()?.toLowerCase() ?? "bin"
 }
 
-export default function SignupPage() {
-  const [authUserId, setAuthUserId] = useState<string | null>(null)
+export default function MyProfilePage() {
+  const [ambassadorId, setAmbassadorId] = useState<string | null>(null)
   const [authEmail, setAuthEmail] = useState<string>("")
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        window.location.href = "/ba-register"
-        return
-      }
-      setAuthUserId(data.session.user.id)
-      setAuthEmail(data.session.user.email ?? "")
-      setForm((prev) => ({ ...prev, email: data.session!.user.email ?? "" }))
-    })
-  }, [])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [uploadStep, setUploadStep] = useState("")
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [status, setStatus] = useState<{ type: "idle" | "ok" | "error"; msg?: string }>({ type: "idle" })
 
   const [form, setForm] = useState({
     full_name: "",
-    email: "",
     phone_number: "",
     instagram_handle: "",
     city: "",
@@ -56,70 +48,104 @@ export default function SignupPage() {
   const [roles, setRoles] = useState<Option[]>([])
   const [skills, setSkills] = useState<Option[]>([])
   const [languages, setLanguages] = useState<Option[]>([])
-
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>([])
   const [selectedSkillIds, setSelectedSkillIds] = useState<number[]>([])
   const [selectedLanguageIds, setSelectedLanguageIds] = useState<number[]>([])
 
-  // File upload state
-  const [headshotFile, setHeadshotFile] = useState<File | null>(null)
-  const [headshotPreview, setHeadshotPreview] = useState<string | null>(null)
-  const [videoFile, setVideoFile] = useState<File | null>(null)
-  const [videoPreview, setVideoPreview] = useState<string | null>(null)
-  const [uploadStep, setUploadStep] = useState("")
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [existingHeadshotUrl, setExistingHeadshotUrl] = useState<string | null>(null)
+  const [existingVideoUrl, setExistingVideoUrl] = useState<string | null>(null)
+
+  const [newHeadshotFile, setNewHeadshotFile] = useState<File | null>(null)
+  const [newHeadshotPreview, setNewHeadshotPreview] = useState<string | null>(null)
+  const [newVideoFile, setNewVideoFile] = useState<File | null>(null)
+  const [newVideoPreview, setNewVideoPreview] = useState<string | null>(null)
 
   const headshotRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLInputElement>(null)
 
-  const [status, setStatus] = useState<{ type: "idle" | "ok" | "error"; msg?: string }>({
-    type: "idle",
-  })
-  const [loading, setLoading] = useState(false)
-
-  const update = (k: string, v: any) => setForm((p) => ({ ...p, [k]: v }))
+  const update = (k: string, v: unknown) => setForm((p) => ({ ...p, [k]: v }))
+  const toggle = (arr: number[], id: number, checked: boolean) =>
+    checked ? [...arr, id] : arr.filter((x) => x !== id)
 
   useEffect(() => {
-    const load = async () => {
-      const [{ data: r, error: er }, { data: s, error: es }, { data: l, error: el }] =
-        await Promise.all([
-          supabase.from("roles").select("id,name").order("name"),
-          supabase.from("skills").select("id,name").order("name"),
-          supabase.from("languages").select("id,name").order("name"),
-        ])
-
-      if (er || es || el) {
-        setStatus({
-          type: "error",
-          msg:
-            "Could not load roles/skills/languages. Check Supabase RLS select policies on roles/skills/languages.",
-        })
+    const init = async () => {
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (!sessionData.session) {
+        window.location.href = "/ba-login"
         return
       }
+
+      const userId = sessionData.session.user.id
+      setAuthEmail(sessionData.session.user.email ?? "")
+
+      const [
+        { data: ambassador, error: ambErr },
+        { data: r },
+        { data: s },
+        { data: l },
+      ] = await Promise.all([
+        supabase.from("ambassadors").select("*").eq("user_id", userId).single(),
+        supabase.from("roles").select("id,name").order("name"),
+        supabase.from("skills").select("id,name").order("name"),
+        supabase.from("languages").select("id,name").order("name"),
+      ])
+
+      if (ambErr || !ambassador) {
+        window.location.href = "/signup"
+        return
+      }
+
+      setAmbassadorId(ambassador.id)
+      setExistingHeadshotUrl(ambassador.headshot_url ?? null)
+      setExistingVideoUrl(ambassador.video_url ?? null)
+      setForm({
+        full_name: ambassador.full_name ?? "",
+        phone_number: ambassador.phone_number ?? "",
+        instagram_handle: ambassador.instagram_handle ?? "",
+        city: ambassador.city ?? "",
+        state_region: ambassador.state_region ?? "",
+        country: ambassador.country ?? "",
+        timezone: ambassador.timezone ?? "",
+        experience_level: ambassador.experience_level ?? "new",
+        bio: ambassador.bio ?? "",
+        willing_to_travel: ambassador.willing_to_travel ?? false,
+        has_vehicle: ambassador.has_vehicle ?? false,
+        availability_status: ambassador.availability_status ?? "available",
+        can_work_weekends: ambassador.can_work_weekends ?? true,
+        can_work_nights: ambassador.can_work_nights ?? true,
+      })
 
       setRoles((r as Option[]) ?? [])
       setSkills((s as Option[]) ?? [])
       setLanguages((l as Option[]) ?? [])
+
+      // Load existing join selections
+      const [{ data: ar }, { data: as_ }, { data: al }] = await Promise.all([
+        supabase.from("ambassador_roles").select("role_id").eq("ambassador_id", ambassador.id),
+        supabase.from("ambassador_skills").select("skill_id").eq("ambassador_id", ambassador.id),
+        supabase.from("ambassador_languages").select("language_id").eq("ambassador_id", ambassador.id),
+      ])
+
+      setSelectedRoleIds((ar ?? []).map((x: { role_id: number }) => x.role_id))
+      setSelectedSkillIds((as_ ?? []).map((x: { skill_id: number }) => x.skill_id))
+      setSelectedLanguageIds((al ?? []).map((x: { language_id: number }) => x.language_id))
+
+      setLoading(false)
     }
 
-    load()
+    init()
   }, [])
 
-  // Cleanup object URLs on unmount
   useEffect(() => {
     return () => {
-      if (headshotPreview) URL.revokeObjectURL(headshotPreview)
-      if (videoPreview) URL.revokeObjectURL(videoPreview)
+      if (newHeadshotPreview) URL.revokeObjectURL(newHeadshotPreview)
+      if (newVideoPreview) URL.revokeObjectURL(newVideoPreview)
     }
-  }, [headshotPreview, videoPreview])
-
-  const toggle = (arr: number[], id: number, checked: boolean) =>
-    checked ? [...arr, id] : arr.filter((x) => x !== id)
+  }, [newHeadshotPreview, newVideoPreview])
 
   function handleHeadshotChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-
     const allowed = ["image/jpeg", "image/png", "image/webp"]
     if (!allowed.includes(file.type)) {
       setStatus({ type: "error", msg: "Headshot must be a JPEG, PNG, or WebP image." })
@@ -131,17 +157,15 @@ export default function SignupPage() {
       e.target.value = ""
       return
     }
-
-    if (headshotPreview) URL.revokeObjectURL(headshotPreview)
-    setHeadshotFile(file)
-    setHeadshotPreview(URL.createObjectURL(file))
+    if (newHeadshotPreview) URL.revokeObjectURL(newHeadshotPreview)
+    setNewHeadshotFile(file)
+    setNewHeadshotPreview(URL.createObjectURL(file))
     setStatus({ type: "idle" })
   }
 
   function handleVideoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-
     const allowed = ["video/mp4", "video/webm", "video/quicktime"]
     if (!allowed.includes(file.type)) {
       setStatus({ type: "error", msg: "Video must be MP4, WebM, or MOV." })
@@ -153,8 +177,6 @@ export default function SignupPage() {
       e.target.value = ""
       return
     }
-
-    // Validate duration via HTML5 video element
     const url = URL.createObjectURL(file)
     const vid = document.createElement("video")
     vid.preload = "metadata"
@@ -168,9 +190,9 @@ export default function SignupPage() {
         if (videoRef.current) videoRef.current.value = ""
         return
       }
-      if (videoPreview) URL.revokeObjectURL(videoPreview)
-      setVideoFile(file)
-      setVideoPreview(url)
+      if (newVideoPreview) URL.revokeObjectURL(newVideoPreview)
+      setNewVideoFile(file)
+      setNewVideoPreview(url)
       setStatus({ type: "idle" })
     }
     vid.onerror = () => {
@@ -184,80 +206,52 @@ export default function SignupPage() {
   async function uploadFile(bucket: string, path: string, file: File) {
     const { error } = await supabase.storage.from(bucket).upload(path, file, {
       cacheControl: "3600",
-      upsert: false,
+      upsert: true,
     })
     if (error) throw new Error(`Upload to ${bucket} failed: ${error.message}`)
-
     const { data } = supabase.storage.from(bucket).getPublicUrl(path)
-    if (!data?.publicUrl) {
-      throw new Error(`Could not generate public URL for ${bucket}/${path}`)
-    }
+    if (!data?.publicUrl) throw new Error(`Could not generate public URL for ${bucket}/${path}`)
     return data.publicUrl
   }
 
-  async function rollbackSignupMediaAndProfile(
-    ambassadorId: string | null,
-    headshotPath: string | null,
-    videoPath: string | null
-  ) {
-    if (headshotPath) {
-      await supabase.storage.from("headshots").remove([headshotPath])
-    }
-    if (videoPath) {
-      await supabase.storage.from("intro-videos").remove([videoPath])
-    }
-    if (ambassadorId) {
-      await supabase.from("ambassadors").delete().eq("id", ambassadorId)
-    }
-  }
-
-  const submit = async (e: React.FormEvent) => {
+  const save = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    if (!ambassadorId) return
+    setSaving(true)
     setStatus({ type: "idle" })
     setUploadStep("")
     setUploadProgress(0)
 
-    // Validate files are selected
-    if (!headshotFile) {
-      setStatus({ type: "error", msg: "Please upload a headshot photo." })
-      setLoading(false)
-      return
-    }
-    if (!videoFile) {
-      setStatus({ type: "error", msg: "Please upload an intro video." })
-      setLoading(false)
-      return
-    }
-
-    const ambassadorId = crypto.randomUUID()
-    let headshotPath: string | null = null
-    let videoPath: string | null = null
-
     try {
-      // 1. Upload headshot
-      setUploadStep("Uploading headshot...")
-      setUploadProgress(15)
-      headshotPath = `photos/${ambassadorId}.${fileExt(headshotFile)}`
-      const headshotUrl = await uploadFile("headshots", headshotPath, headshotFile)
+      let headshotUrl: string | undefined
+      let videoUrl: string | undefined
 
-      // 2. Upload video
-      setUploadStep("Uploading video... this can take up to a minute on slower connections.")
-      setUploadProgress(35)
-      videoPath = `videos/${ambassadorId}.${fileExt(videoFile)}`
-      const videoUrl = await uploadFile("intro-videos", videoPath, videoFile)
-      if (!headshotUrl || !videoUrl) {
-        throw new Error("Missing media URL after upload. Please retry.")
+      if (newHeadshotFile) {
+        setUploadStep("Uploading headshot...")
+        setUploadProgress(20)
+        headshotUrl = await uploadFile(
+          "headshots",
+          `photos/${ambassadorId}.${fileExt(newHeadshotFile)}`,
+          newHeadshotFile
+        )
+        setUploadProgress(50)
       }
-      setUploadProgress(80)
 
-      // 3. Insert ambassador row with media URLs (required by DB NOT NULL constraints)
+      if (newVideoFile) {
+        setUploadStep("Uploading video... this can take up to a minute on slower connections.")
+        setUploadProgress(55)
+        videoUrl = await uploadFile(
+          "intro-videos",
+          `videos/${ambassadorId}.${fileExt(newVideoFile)}`,
+          newVideoFile
+        )
+        setUploadProgress(80)
+      }
+
       setUploadStep("Saving your profile...")
-      setUploadProgress(90)
+      setUploadProgress(85)
 
-      const payload: any = {
-        id: ambassadorId,
-        user_id: authUserId,
+      const updatePayload: Record<string, unknown> = {
         ...form,
         full_name: form.full_name.trim(),
         email: authEmail.trim().toLowerCase(),
@@ -268,103 +262,91 @@ export default function SignupPage() {
         country: form.country.trim() || null,
         timezone: form.timezone.trim() || null,
         bio: form.bio.trim() || null,
-        headshot_url: headshotUrl,
-        video_url: videoUrl,
         last_active_at: new Date().toISOString(),
+        ...(headshotUrl ? { headshot_url: headshotUrl } : {}),
+        ...(videoUrl ? { video_url: videoUrl } : {}),
       }
 
-      const { error: insertError } = await supabase.from("ambassadors").insert([payload])
+      const { error: updateError } = await supabase
+        .from("ambassadors")
+        .update(updatePayload)
+        .eq("id", ambassadorId)
 
-      if (insertError) {
-        await rollbackSignupMediaAndProfile(ambassadorId, headshotPath, videoPath)
-        setStatus({ type: "error", msg: insertError.message })
-        setLoading(false)
-        setUploadStep("")
-        setUploadProgress(0)
-        return
-      }
+      if (updateError) throw new Error(updateError.message)
+
+      setUploadStep("Saving roles & skills...")
+      setUploadProgress(92)
+
+      await Promise.all([
+        supabase.from("ambassador_roles").delete().eq("ambassador_id", ambassadorId),
+        supabase.from("ambassador_skills").delete().eq("ambassador_id", ambassadorId),
+        supabase.from("ambassador_languages").delete().eq("ambassador_id", ambassadorId),
+      ])
+
+      const joins: Promise<unknown>[] = []
+      if (selectedRoleIds.length)
+        joins.push(supabase.from("ambassador_roles").insert(selectedRoleIds.map((role_id) => ({ ambassador_id: ambassadorId, role_id }))))
+      if (selectedSkillIds.length)
+        joins.push(supabase.from("ambassador_skills").insert(selectedSkillIds.map((skill_id) => ({ ambassador_id: ambassadorId, skill_id }))))
+      if (selectedLanguageIds.length)
+        joins.push(supabase.from("ambassador_languages").insert(selectedLanguageIds.map((language_id) => ({ ambassador_id: ambassadorId, language_id }))))
+
+      await Promise.all(joins)
+
+      setUploadProgress(100)
+
+      // Update local previews if new files were uploaded
+      if (headshotUrl) setExistingHeadshotUrl(headshotUrl)
+      if (videoUrl) setExistingVideoUrl(videoUrl)
+      setNewHeadshotFile(null)
+      setNewVideoFile(null)
+      if (newHeadshotPreview) URL.revokeObjectURL(newHeadshotPreview)
+      if (newVideoPreview) URL.revokeObjectURL(newVideoPreview)
+      setNewHeadshotPreview(null)
+      setNewVideoPreview(null)
+      if (headshotRef.current) headshotRef.current.value = ""
+      if (videoRef.current) videoRef.current.value = ""
+
+      setStatus({ type: "ok", msg: "Profile updated!" })
     } catch (err: unknown) {
-      await rollbackSignupMediaAndProfile(ambassadorId, headshotPath, videoPath)
-      const message = err instanceof Error ? err.message : "Upload failed"
-      setStatus({ type: "error", msg: message })
-      setLoading(false)
+      setStatus({ type: "error", msg: err instanceof Error ? err.message : "Update failed." })
+    } finally {
+      setSaving(false)
       setUploadStep("")
       setUploadProgress(0)
-      return
     }
+  }
 
-    // 5. Insert join tables (roles/skills/languages)
-    setUploadStep("Saving roles & skills...")
-    setUploadProgress(95)
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    window.location.href = "/"
+  }
 
-    const joins: Promise<any>[] = []
-
-    if (selectedRoleIds.length) {
-      joins.push(
-        Promise.resolve(
-          supabase
-            .from("ambassador_roles")
-            .insert(selectedRoleIds.map((role_id) => ({ ambassador_id: ambassadorId, role_id })))
-        )
-      )
-    }
-    if (selectedSkillIds.length) {
-      joins.push(
-        Promise.resolve(
-          supabase
-            .from("ambassador_skills")
-            .insert(selectedSkillIds.map((skill_id) => ({ ambassador_id: ambassadorId, skill_id })))
-        )
-      )
-    }
-    if (selectedLanguageIds.length) {
-      joins.push(
-        Promise.resolve(
-          supabase
-            .from("ambassador_languages")
-            .insert(
-              selectedLanguageIds.map((language_id) => ({ ambassador_id: ambassadorId, language_id }))
-            )
-        )
-      )
-    }
-
-    const results = await Promise.all(joins)
-    const joinError = results.find((r) => r?.error)?.error
-
-    if (joinError) {
-      setStatus({
-        type: "error",
-        msg:
-          "Ambassador saved, but roles/skills/languages failed to save: " +
-          joinError.message +
-          ". Check insert policies on join tables.",
-      })
-      setLoading(false)
-      setUploadStep("")
-      setUploadProgress(0)
-      return
-    }
-
-    setUploadProgress(100)
-    window.location.href = "/my-profile"
+  if (loading) {
+    return (
+      <main className="p-8">
+        <p className="text-gray-500">Loading your profile…</p>
+      </main>
+    )
   }
 
   return (
     <main className="p-8 max-w-2xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Ambassador Signup</h1>
-        <div className="flex gap-3">
-          <Link className="underline" href="/">
-            Home
-          </Link>
-          <Link className="underline" href="/directory">
-            Directory
-          </Link>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">My Profile</h1>
+        <div className="flex gap-3 items-center">
+          <span className="text-sm text-gray-500">{authEmail}</span>
+          <button
+            type="button"
+            onClick={signOut}
+            className="text-sm underline hover:text-gray-700"
+          >
+            Sign out
+          </button>
         </div>
       </div>
 
-      <form onSubmit={submit} className="mt-6 space-y-5">
+      <form onSubmit={save} className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium">Full name</label>
@@ -504,7 +486,6 @@ export default function SignupPage() {
             />
             Willing to travel
           </label>
-
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -513,7 +494,6 @@ export default function SignupPage() {
             />
             Has vehicle
           </label>
-
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -522,7 +502,6 @@ export default function SignupPage() {
             />
             Can work weekends
           </label>
-
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -541,9 +520,7 @@ export default function SignupPage() {
                 <input
                   type="checkbox"
                   checked={selectedRoleIds.includes(opt.id)}
-                  onChange={(e) =>
-                    setSelectedRoleIds((prev) => toggle(prev, opt.id, e.target.checked))
-                  }
+                  onChange={(e) => setSelectedRoleIds((prev) => toggle(prev, opt.id, e.target.checked))}
                 />
                 {opt.name}
               </label>
@@ -559,9 +536,7 @@ export default function SignupPage() {
                 <input
                   type="checkbox"
                   checked={selectedSkillIds.includes(opt.id)}
-                  onChange={(e) =>
-                    setSelectedSkillIds((prev) => toggle(prev, opt.id, e.target.checked))
-                  }
+                  onChange={(e) => setSelectedSkillIds((prev) => toggle(prev, opt.id, e.target.checked))}
                 />
                 {opt.name}
               </label>
@@ -577,9 +552,7 @@ export default function SignupPage() {
                 <input
                   type="checkbox"
                   checked={selectedLanguageIds.includes(opt.id)}
-                  onChange={(e) =>
-                    setSelectedLanguageIds((prev) => toggle(prev, opt.id, e.target.checked))
-                  }
+                  onChange={(e) => setSelectedLanguageIds((prev) => toggle(prev, opt.id, e.target.checked))}
                 />
                 {opt.name}
               </label>
@@ -597,61 +570,73 @@ export default function SignupPage() {
           />
         </div>
 
-        {/* Headshot upload */}
+        {/* Headshot */}
         <div className="border rounded-lg p-4">
-          <div className="font-medium">Headshot Photo <span className="text-red-500">*</span></div>
-          <p className="text-sm text-gray-500 mt-1">
-            JPEG, PNG, or WebP. Max {HEADSHOT_MAX_MB} MB.
+          <div className="font-medium">Headshot Photo</div>
+          {existingHeadshotUrl && !newHeadshotPreview && (
+            <img
+              src={existingHeadshotUrl}
+              alt="Current headshot"
+              className="mt-3 w-28 h-28 object-cover rounded-full border"
+            />
+          )}
+          {newHeadshotPreview && (
+            <img
+              src={newHeadshotPreview}
+              alt="New headshot preview"
+              className="mt-3 w-28 h-28 object-cover rounded-full border"
+            />
+          )}
+          <p className="text-sm text-gray-500 mt-2">
+            Upload a new photo to replace your current one. JPEG, PNG, or WebP. Max {HEADSHOT_MAX_MB} MB.
           </p>
           <input
             ref={headshotRef}
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            required
             onChange={handleHeadshotChange}
             className="mt-2 block text-sm"
           />
-          {headshotPreview && (
-            <img
-              src={headshotPreview}
-              alt="Headshot preview"
-              className="mt-3 w-28 h-28 object-cover rounded-full border"
-            />
-          )}
         </div>
 
-        {/* Video upload */}
+        {/* Video */}
         <div className="border rounded-lg p-4">
-          <div className="font-medium">Intro Video <span className="text-red-500">*</span></div>
-          <p className="text-sm text-gray-500 mt-1">
-            MP4, WebM, or MOV. Max {VIDEO_MAX_SECONDS} seconds, {VIDEO_MAX_MB} MB.
+          <div className="font-medium">Intro Video</div>
+          {existingVideoUrl && !newVideoPreview && (
+            <video
+              src={existingVideoUrl}
+              controls
+              className="mt-3 w-full max-w-sm rounded-lg border"
+            />
+          )}
+          {newVideoPreview && (
+            <video
+              src={newVideoPreview}
+              controls
+              className="mt-3 w-full max-w-sm rounded-lg border"
+            />
+          )}
+          <p className="text-sm text-gray-500 mt-2">
+            Upload a new video to replace your current one. MP4, WebM, or MOV. Max {VIDEO_MAX_SECONDS} seconds, {VIDEO_MAX_MB} MB.
           </p>
           <input
             ref={videoRef}
             type="file"
             accept="video/mp4,video/webm,video/quicktime"
-            required
             onChange={handleVideoChange}
             className="mt-2 block text-sm"
           />
-          {videoPreview && (
-            <video
-              src={videoPreview}
-              controls
-              className="mt-3 w-full max-w-sm rounded-lg border"
-            />
-          )}
         </div>
 
         <button
-          disabled={loading}
-          className="bg-black text-white rounded-md px-4 py-2 disabled:opacity-60"
           type="submit"
+          disabled={saving}
+          className="bg-black text-white rounded-md px-6 py-3 font-semibold disabled:opacity-60 hover:bg-gray-800 transition-colors"
         >
-          {loading ? "Submitting..." : "Submit"}
+          {saving ? "Saving..." : "Update"}
         </button>
 
-        {uploadStep && loading && (
+        {uploadStep && saving && (
           <div className="w-full max-w-md">
             <div className="text-sm text-gray-600">{uploadStep}</div>
             <div className="mt-2 h-2 w-full rounded-full bg-gray-200 overflow-hidden">
@@ -664,9 +649,13 @@ export default function SignupPage() {
           </div>
         )}
 
-        {status.type === "ok" && <div className="text-green-700">{status.msg}</div>}
+        {status.type === "ok" && <div className="text-green-700 font-medium">{status.msg}</div>}
         {status.type === "error" && <div className="text-red-700">{status.msg}</div>}
       </form>
+
+      <div className="mt-8 pt-6 border-t text-sm text-gray-500">
+        <Link href="/" className="underline hover:text-gray-700">← Back to home</Link>
+      </div>
     </main>
   )
 }

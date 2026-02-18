@@ -9,6 +9,9 @@ export default function Home() {
           <Link className="text-sm hover:underline" href="/about">
             About
           </Link>
+          <Link className="text-sm hover:underline" href="/ba-login">
+            Ambassador Login
+          </Link>
           <Link className="text-sm hover:underline" href="/login">
             Agency Login
           </Link>
@@ -75,7 +78,7 @@ export default function Home() {
           </div>
 
           <Link
-            href="/signup"
+            href="/ba-register"
             className="block w-full bg-black text-white text-center font-semibold py-4 rounded-lg hover:bg-gray-800 transition-colors"
           >
             Sign Up Now
@@ -83,7 +86,7 @@ export default function Home() {
 
           <p className="text-center text-sm text-gray-500 mt-4">
             Already have an account?{" "}
-            <Link href="/login" className="underline hover:text-gray-700">
+            <Link href="/ba-login" className="underline hover:text-gray-700">
               Log in here
             </Link>
           </p>
