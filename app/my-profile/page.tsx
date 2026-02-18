@@ -285,11 +285,11 @@ export default function MyProfilePage() {
 
       const joins: Promise<unknown>[] = []
       if (selectedRoleIds.length)
-        joins.push(supabase.from("ambassador_roles").insert(selectedRoleIds.map((role_id) => ({ ambassador_id: ambassadorId, role_id }))))
+        joins.push(Promise.resolve(supabase.from("ambassador_roles").insert(selectedRoleIds.map((role_id) => ({ ambassador_id: ambassadorId, role_id })))))
       if (selectedSkillIds.length)
-        joins.push(supabase.from("ambassador_skills").insert(selectedSkillIds.map((skill_id) => ({ ambassador_id: ambassadorId, skill_id }))))
+        joins.push(Promise.resolve(supabase.from("ambassador_skills").insert(selectedSkillIds.map((skill_id) => ({ ambassador_id: ambassadorId, skill_id })))))
       if (selectedLanguageIds.length)
-        joins.push(supabase.from("ambassador_languages").insert(selectedLanguageIds.map((language_id) => ({ ambassador_id: ambassadorId, language_id }))))
+        joins.push(Promise.resolve(supabase.from("ambassador_languages").insert(selectedLanguageIds.map((language_id) => ({ ambassador_id: ambassadorId, language_id })))))
 
       await Promise.all(joins)
 
