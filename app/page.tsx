@@ -16,7 +16,7 @@ export default function Home() {
 
         {/* Welcome Section */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-4">BADATABASE.COM</h1>
+          <h1 className="text-5xl font-bold mb-4">JOIN THE BA DATABASE</h1>
           <p className="text-xl text-gray-600 mb-2">
             Join Our Brand Ambassador Network
           </p>
