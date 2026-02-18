@@ -41,12 +41,14 @@ export default function RevealContact({ ambassadorId }: { ambassadorId: string }
 
     const { data, error } = await supabase.rpc("reveal_contact", { p_ambassador_id: ambassadorId })
 
+    console.log("[RevealContact] RPC response:", { data, error })
+
     if (error) {
       const msg =
         error.message.includes("no_active_subscription")
-          ? "Your account doesn’t have an active subscription yet."
+          ? "Your account doesn't have an active subscription yet."
           : error.message.includes("quota_exceeded")
-          ? "You’ve hit your monthly contact-reveal limit."
+          ? "You've hit your monthly contact-reveal limit."
           : error.message
       setErr(msg)
       setLoading(false)
@@ -54,7 +56,12 @@ export default function RevealContact({ ambassadorId }: { ambassadorId: string }
     }
 
     const row = Array.isArray(data) ? data[0] : data
-    setContact(row ?? null)
+    if (!row) {
+      setErr("No contact data returned. The reveal_contact RPC may need to be checked.")
+      setLoading(false)
+      return
+    }
+    setContact(row)
 
     const { data: qs } = await supabase.rpc("quota_status")
     if (qs && qs[0]) {
