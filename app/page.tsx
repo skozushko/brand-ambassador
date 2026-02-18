@@ -6,6 +6,9 @@ export default function Home() {
       <div className="max-w-4xl mx-auto p-8 py-16">
         {/* Header with navigation */}
         <div className="flex items-center justify-end gap-4 mb-12">
+          <Link className="text-sm hover:underline" href="/about">
+            About
+          </Link>
           <Link className="text-sm hover:underline" href="/login">
             Agency Login
           </Link>
@@ -13,7 +16,7 @@ export default function Home() {
 
         {/* Welcome Section */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-4">Welcome</h1>
+          <h1 className="text-5xl font-bold mb-4">BADATABASE.COM</h1>
           <p className="text-xl text-gray-600 mb-2">
             Join Our Brand Ambassador Network
           </p>
