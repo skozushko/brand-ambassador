@@ -44,8 +44,6 @@ export default function BARegisterPage() {
     }
 
     setLoading(true)
-    // Clear any stale session before creating a new account
-    await supabase.auth.signOut()
     const { error } = await supabase.auth.signUp({ email, password })
     setLoading(false)
 
