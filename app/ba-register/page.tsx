@@ -46,17 +46,14 @@ export default function BARegisterPage() {
     setLoading(true)
     // Clear any stale session before creating a new account
     await supabase.auth.signOut()
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    const { error } = await supabase.auth.signUp({ email, password })
     setLoading(false)
 
     if (error) {
-      setStatus({ type: "error", msg: error.message })
-      return
-    }
-
-    // Supabase doesn't error on duplicate emails — check that a new user was actually created
-    if (!data.user || data.user.identities?.length === 0) {
-      setStatus({ type: "error", msg: "An account with this email already exists. Please log in instead." })
+      const msg = error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("already exists")
+        ? "An account with this email already exists. Please log in instead."
+        : error.message
+      setStatus({ type: "error", msg })
       return
     }
 
