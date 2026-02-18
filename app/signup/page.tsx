@@ -24,15 +24,28 @@ export default function SignupPage() {
   const [authEmail, setAuthEmail] = useState<string>("")
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    const init = async () => {
+      const { data } = await supabase.auth.getSession()
       if (!data.session) {
         window.location.href = "/ba-register"
         return
       }
-      setAuthUserId(data.session.user.id)
+      const userId = data.session.user.id
+      // If they already have a profile, send them to edit it instead
+      const { data: existing } = await supabase
+        .from("ambassadors")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle()
+      if (existing) {
+        window.location.href = "/my-profile"
+        return
+      }
+      setAuthUserId(userId)
       setAuthEmail(data.session.user.email ?? "")
       setForm((prev) => ({ ...prev, email: data.session!.user.email ?? "" }))
-    })
+    }
+    init()
   }, [])
 
   const [form, setForm] = useState({
