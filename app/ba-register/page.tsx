@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { getBrowserSupabase } from "@/lib/supabase"
 
@@ -14,6 +14,21 @@ export default function BARegisterPage() {
   const [confirm, setConfirm] = useState("")
   const [status, setStatus] = useState<{ type: "idle" | "ok" | "error"; msg?: string }>({ type: "idle" })
   const [loading, setLoading] = useState(false)
+
+  // If already logged in, send them where they belong
+  useEffect(() => {
+    const check = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (!data.session) return
+      const { data: existing } = await supabase
+        .from("ambassadors")
+        .select("id")
+        .eq("user_id", data.session.user.id)
+        .maybeSingle()
+      window.location.href = existing ? "/my-profile" : "/signup"
+    }
+    check()
+  }, [])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,11 +44,19 @@ export default function BARegisterPage() {
     }
 
     setLoading(true)
-    const { error } = await supabase.auth.signUp({ email, password })
+    // Clear any stale session before creating a new account
+    await supabase.auth.signOut()
+    const { data, error } = await supabase.auth.signUp({ email, password })
     setLoading(false)
 
     if (error) {
       setStatus({ type: "error", msg: error.message })
+      return
+    }
+
+    // Supabase doesn't error on duplicate emails — check that a new user was actually created
+    if (!data.user || data.user.identities?.length === 0) {
+      setStatus({ type: "error", msg: "An account with this email already exists. Please log in instead." })
       return
     }
 
