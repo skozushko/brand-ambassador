@@ -231,6 +231,33 @@ export default function SignupPage() {
     setUploadStep("")
     setUploadProgress(0)
 
+    // Validate required fields
+    if (!form.phone_number.trim()) {
+      setStatus({ type: "error", msg: "Phone number is required." })
+      setLoading(false)
+      return
+    }
+    if (!form.city.trim()) {
+      setStatus({ type: "error", msg: "City is required." })
+      setLoading(false)
+      return
+    }
+    if (!form.country) {
+      setStatus({ type: "error", msg: "Country is required." })
+      setLoading(false)
+      return
+    }
+    if (!form.state_region.trim()) {
+      setStatus({ type: "error", msg: "State / Province / Region is required." })
+      setLoading(false)
+      return
+    }
+    if (!form.bio.trim()) {
+      setStatus({ type: "error", msg: "Bio is required." })
+      setLoading(false)
+      return
+    }
+
     // Validate files are selected
     if (!headshotFile) {
       setStatus({ type: "error", msg: "Please upload a headshot photo." })
@@ -400,12 +427,13 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Phone number</label>
+            <label className="block text-sm font-medium">Phone number <span className="text-red-500">*</span></label>
             <input
               className="mt-1 w-full border rounded-md p-2"
               value={form.phone_number}
               onChange={(e) => update("phone_number", e.target.value)}
               placeholder="+1 212 555 0123"
+              required
             />
           </div>
 
@@ -422,31 +450,34 @@ export default function SignupPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium">City</label>
+            <label className="block text-sm font-medium">City <span className="text-red-500">*</span></label>
             <input
               className="mt-1 w-full border rounded-md p-2"
               value={form.city}
               onChange={(e) => update("city", e.target.value)}
+              required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">Country</label>
+            <label className="block text-sm font-medium">Country <span className="text-red-500">*</span></label>
             <select
               className="mt-1 w-full border rounded-md p-2"
               value={form.country}
               onChange={(e) => { update("country", e.target.value); update("state_region", "") }}
+              required
             >
               <option value="">Select country…</option>
               {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium">State / Province / Region</label>
+            <label className="block text-sm font-medium">State / Province / Region <span className="text-red-500">*</span></label>
             {form.country === "United States" ? (
               <select
                 className="mt-1 w-full border rounded-md p-2"
                 value={form.state_region}
                 onChange={(e) => update("state_region", e.target.value)}
+                required
               >
                 <option value="">Select state…</option>
                 {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -456,6 +487,7 @@ export default function SignupPage() {
                 className="mt-1 w-full border rounded-md p-2"
                 value={form.state_region}
                 onChange={(e) => update("state_region", e.target.value)}
+                required
               >
                 <option value="">Select province…</option>
                 {CANADA_PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
@@ -466,6 +498,7 @@ export default function SignupPage() {
                 value={form.state_region}
                 onChange={(e) => update("state_region", e.target.value)}
                 placeholder="State / province / region"
+                required
               />
             )}
           </div>
@@ -482,7 +515,7 @@ export default function SignupPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium">Experience level</label>
+            <label className="block text-sm font-medium">Experience level <span className="text-red-500">*</span></label>
             <select
               className="mt-1 w-full border rounded-md p-2"
               value={form.experience_level}
@@ -495,7 +528,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Availability status</label>
+            <label className="block text-sm font-medium">Availability status <span className="text-red-500">*</span></label>
             <select
               className="mt-1 w-full border rounded-md p-2"
               value={form.availability_status}
@@ -601,12 +634,13 @@ export default function SignupPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Bio</label>
+          <label className="block text-sm font-medium">Bio <span className="text-red-500">*</span></label>
           <textarea
             className="mt-1 w-full border rounded-md p-2"
             rows={4}
             value={form.bio}
             onChange={(e) => update("bio", e.target.value)}
+            required
           />
         </div>
 
