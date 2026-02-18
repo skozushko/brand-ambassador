@@ -45,21 +45,42 @@ export default async function Page({
 
       <div className="border rounded-lg p-6">
         {/* Header section */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">{ambassador.full_name}</h1>
-            <div className="text-gray-600 mt-2">
-              {ambassador.city && `${ambassador.city}, `}
-              {ambassador.state_region && `${ambassador.state_region}, `}
-              {ambassador.country}
+        <div className="flex items-start gap-5">
+          {ambassador.headshot_url && (
+            <img
+              src={ambassador.headshot_url}
+              alt={ambassador.full_name}
+              className="w-28 h-28 rounded-full object-cover border flex-shrink-0"
+            />
+          )}
+          <div className="flex-1 flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">{ambassador.full_name}</h1>
+              <div className="text-gray-600 mt-2">
+                {ambassador.city && `${ambassador.city}, `}
+                {ambassador.state_region && `${ambassador.state_region}, `}
+                {ambassador.country}
+              </div>
+            </div>
+
+            <div className="text-right text-gray-600">
+              <div>{ambassador.experience_level}</div>
+              <div className="mt-1">{ambassador.availability_status}</div>
             </div>
           </div>
-
-          <div className="text-right text-gray-600">
-            <div>{ambassador.experience_level}</div>
-            <div className="mt-1">{ambassador.availability_status}</div>
-          </div>
         </div>
+
+        {/* Intro Video */}
+        {ambassador.video_url && (
+          <div className="mt-6">
+            <h2 className="font-semibold mb-2">Intro Video</h2>
+            <video
+              src={ambassador.video_url}
+              controls
+              className="w-full max-w-lg rounded-lg border"
+            />
+          </div>
+        )}
 
         {/* Bio */}
         {ambassador.bio && (

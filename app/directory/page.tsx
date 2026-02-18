@@ -325,25 +325,29 @@ export default async function DirectoryPage({
                 href={`/directory/${a.id}`}
                 className="block border rounded-lg p-4 hover:bg-gray-50 transition-colors"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="font-semibold text-lg">{a.full_name}</div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {(a.city ? `${a.city}, ` : "") +
-                        (a.state_region ? `${a.state_region}, ` : "") +
-                        (a.country ?? "")}
+                <div className="flex items-start gap-4">
+                  {a.headshot_url && (
+                    <img
+                      src={a.headshot_url}
+                      alt={a.full_name}
+                      className="w-16 h-16 rounded-full object-cover border flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 flex items-start justify-between gap-4">
+                    <div>
+                      <div className="font-semibold text-lg">{a.full_name}</div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        {(a.city ? `${a.city}, ` : "") +
+                          (a.state_region ? `${a.state_region}, ` : "") +
+                          (a.country ?? "")}
+                      </div>
+                    </div>
+
+                    <div className="text-right text-sm text-gray-600">
+                      <div>{a.experience_level ?? ""}</div>
+                      <div className="mt-1">{a.availability_status ?? ""}</div>
                     </div>
                   </div>
-
-                  <div className="text-right text-sm text-gray-600">
-                    <div>{a.experience_level ?? ""}</div>
-                    <div className="mt-1">{a.availability_status ?? ""}</div>
-                  </div>
-                </div>
-
-                <div className="text-sm mt-3">
-                  IG: {a.instagram_handle ? `@${a.instagram_handle}` : "—"} • Phone:{" "}
-                  {a.phone_number ?? "—"}
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
