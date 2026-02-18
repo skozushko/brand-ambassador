@@ -117,10 +117,14 @@ export default function BARegisterPage() {
             </button>
 
             {status.type === "error" && (
-              <p className="text-red-600 text-sm">{status.msg}</p>
+              <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+                <p className="text-red-700 font-medium text-sm">{status.msg}</p>
+              </div>
             )}
             {status.type === "ok" && (
-              <p className="text-green-600 text-sm">{status.msg}</p>
+              <div className="rounded-lg bg-green-50 border border-green-200 p-4">
+                <p className="text-green-700 font-medium text-sm">{status.msg}</p>
+              </div>
             )}
           </form>
 
