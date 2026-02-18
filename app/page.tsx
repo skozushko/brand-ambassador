@@ -92,14 +92,67 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Footer Info */}
-        <div className="mt-16 text-center text-sm text-gray-500">
-          <p>
-            Are you a staffing agency or brand?{" "}
-            <Link href="/request-access" className="underline hover:text-gray-700">
-              Request access to our directory
+        {/* Agency Section */}
+        <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 shadow-sm max-w-2xl mx-auto mt-8">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-semibold mb-3">
+              Are You a Staffing Agency or Brand?
+            </h2>
+            <p className="text-gray-600">
+              Get access to our searchable directory of brand ambassadors. Filter by location, skills, availability, and more.
+            </p>
+          </div>
+
+          <div className="space-y-4 mb-6">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-sm font-semibold mt-0.5">
+                1
+              </div>
+              <div>
+                <h3 className="font-medium">Request Access</h3>
+                <p className="text-sm text-gray-600">
+                  Tell us about your agency and what regions you need
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-sm font-semibold mt-0.5">
+                2
+              </div>
+              <div>
+                <h3 className="font-medium">Subscribe to Your Region</h3>
+                <p className="text-sm text-gray-600">
+                  Choose a regional or worldwide plan
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-sm font-semibold mt-0.5">
+                3
+              </div>
+              <div>
+                <h3 className="font-medium">Search the Directory</h3>
+                <p className="text-sm text-gray-600">
+                  Find and connect with ambassadors that fit your needs
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Link
+            href="/request-access"
+            className="block w-full bg-white border-2 border-black text-black text-center font-semibold py-4 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Request Access
+          </Link>
+
+          <p className="text-center text-sm text-gray-500 mt-4">
+            Already have an account?{" "}
+            <Link href="/login" className="underline hover:text-gray-700">
+              Agency login
             </Link>
-            .
           </p>
         </div>
       </div>
