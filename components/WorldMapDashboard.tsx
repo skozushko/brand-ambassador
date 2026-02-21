@@ -102,6 +102,7 @@ const ISO_TO_REGION: Record<string, string> = {
   "804": "Europe", // Ukraine
   "826": "Europe", // United Kingdom
   "336": "Europe", // Vatican City
+  "304": "Europe", // Greenland
 
   // ── Africa ───────────────────────────────────────────────────────
   "012": "Africa", // Algeria
@@ -317,8 +318,8 @@ export default function WorldMapDashboard() {
         {/* World Map */}
         <div className="flex-1 min-w-0">
           <ComposableMap
-            projection="geoMercator"
-            projectionConfig={{ scale: 118, center: [0, 20] }}
+            projection="geoNaturalEarth1"
+            projectionConfig={{ scale: 147, center: [0, 10] }}
             style={{ width: "100%", height: "auto" }}
           >
             <Geographies geography={GEO_URL}>
