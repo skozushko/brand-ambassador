@@ -44,7 +44,7 @@ export default function BARegisterPage() {
     }
 
     setLoading(true)
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({ email, password })
     setLoading(false)
 
     if (error) {
@@ -55,8 +55,14 @@ export default function BARegisterPage() {
       return
     }
 
-    // Redirect to profile form — session is now active
-    window.location.href = "/signup"
+    // If a session is immediately active (email confirmation disabled), go straight to the profile form
+    if (data.session) {
+      window.location.href = "/signup"
+      return
+    }
+
+    // Otherwise email confirmation is required — show a message
+    setStatus({ type: "ok", msg: `A confirmation link has been sent to ${email}. Click the link in your email to activate your account, then log in to complete your profile.` })
   }
 
   return (
