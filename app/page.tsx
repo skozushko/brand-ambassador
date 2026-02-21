@@ -1,7 +1,5 @@
 import Link from "next/link"
-import dynamic from "next/dynamic"
-
-const WorldMapDashboard = dynamic(() => import("@/components/WorldMapDashboard"), { ssr: false })
+import MapLoader from "@/components/MapLoader"
 
 export default function Home() {
   return (
@@ -21,7 +19,7 @@ export default function Home() {
         </div>
 
         {/* Live BA Map Dashboard */}
-        <WorldMapDashboard />
+        <MapLoader />
 
         {/* Welcome Section */}
         <div className="text-center mb-16">
