@@ -49,7 +49,8 @@ export default function SignupPage() {
   }, [])
 
   const [form, setForm] = useState({
-    full_name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     phone_number: "",
     instagram_handle: "",
@@ -299,7 +300,7 @@ export default function SignupPage() {
         id: ambassadorId,
         user_id: authUserId,
         ...form,
-        full_name: form.full_name.trim(),
+        full_name: `${form.first_name.trim()} ${form.last_name.trim()}`,
         email: authEmail.trim().toLowerCase(),
         instagram_handle: form.instagram_handle.replace(/^@/, "").trim() || null,
         phone_number: form.phone_number.trim() || null,
@@ -407,11 +408,21 @@ export default function SignupPage() {
       <form onSubmit={submit} className="mt-6 space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium">Full name</label>
+            <label className="block text-sm font-medium">First name <span className="text-red-500">*</span></label>
             <input
               className="mt-1 w-full border rounded-md p-2"
-              value={form.full_name}
-              onChange={(e) => update("full_name", e.target.value)}
+              value={form.first_name}
+              onChange={(e) => update("first_name", e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Last name <span className="text-red-500">*</span></label>
+            <input
+              className="mt-1 w-full border rounded-md p-2"
+              value={form.last_name}
+              onChange={(e) => update("last_name", e.target.value)}
               required
             />
           </div>
