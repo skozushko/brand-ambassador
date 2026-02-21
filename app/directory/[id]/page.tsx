@@ -93,7 +93,8 @@ export default async function Page({
         {/* Roles, Skills, Languages - FULL LIST */}
         {((ambassador.role_names ?? []).length > 0 ||
           (ambassador.skill_names ?? []).length > 0 ||
-          (ambassador.language_names ?? []).length > 0) && (
+          ambassador.custom_skills ||
+          (ambassador.language_entries ?? ambassador.language_names ?? []).length > 0) && (
           <div className="mt-6">
             <h2 className="font-semibold mb-3">Roles, Skills & Languages</h2>
             <div className="flex flex-wrap gap-2">
@@ -113,14 +114,28 @@ export default async function Page({
                   {name}
                 </span>
               ))}
-              {(ambassador.language_names ?? []).map((name: string) => (
-                <span
-                  key={`l-${name}`}
-                  className="text-sm border border-purple-300 bg-purple-50 rounded-full px-3 py-1"
-                >
-                  {name}
+              {ambassador.custom_skills && (
+                <span className="text-sm border border-green-300 bg-green-50 rounded-full px-3 py-1">
+                  {ambassador.custom_skills}
                 </span>
-              ))}
+              )}
+              {(ambassador.language_entries ?? []).length > 0
+                ? (ambassador.language_entries as { language: string; ability: string }[]).map((entry, i) => (
+                    <span
+                      key={`le-${i}`}
+                      className="text-sm border border-purple-300 bg-purple-50 rounded-full px-3 py-1"
+                    >
+                      {entry.language} — {entry.ability}
+                    </span>
+                  ))
+                : (ambassador.language_names ?? []).map((name: string) => (
+                    <span
+                      key={`l-${name}`}
+                      className="text-sm border border-purple-300 bg-purple-50 rounded-full px-3 py-1"
+                    >
+                      {name}
+                    </span>
+                  ))}
             </div>
           </div>
         )}

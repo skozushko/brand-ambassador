@@ -15,6 +15,34 @@ const HEADSHOT_MAX_MB = 5
 const VIDEO_MAX_MB = 100
 const VIDEO_MAX_SECONDS = 30
 
+const MAJOR_LANGUAGES = [
+  "Afrikaans", "Albanian", "Amharic", "Arabic", "Armenian", "Azerbaijani",
+  "Basque", "Belarusian", "Bengali", "Bosnian", "Bulgarian", "Burmese",
+  "Cantonese (Chinese)", "Catalan", "Croatian", "Czech",
+  "Danish", "Dutch",
+  "English", "Estonian",
+  "Farsi/Persian", "Filipino/Tagalog", "Finnish", "French",
+  "Galician", "Georgian", "German", "Greek", "Gujarati",
+  "Hausa", "Hebrew", "Hindi", "Hungarian",
+  "Icelandic", "Indonesian", "Italian",
+  "Japanese", "Javanese",
+  "Kannada", "Kazakh", "Khmer", "Korean",
+  "Lao", "Latvian", "Lithuanian",
+  "Macedonian", "Malay", "Malayalam", "Maltese", "Mandarin Chinese", "Marathi", "Mongolian",
+  "Nepali", "Norwegian",
+  "Pashto", "Polish", "Portuguese", "Punjabi",
+  "Romanian", "Russian",
+  "Serbian", "Sinhalese", "Slovak", "Slovenian", "Somali", "Spanish", "Swahili", "Swedish",
+  "Tamil", "Telugu", "Thai", "Turkish",
+  "Ukrainian", "Urdu", "Uzbek",
+  "Vietnamese",
+  "Welsh",
+  "Yoruba",
+  "Zulu",
+]
+
+const ABILITY_LEVELS = ["Beginner", "Intermediate", "Fluent"]
+
 function fileExt(file: File) {
   return file.name.split(".").pop()?.toLowerCase() ?? "bin"
 }
@@ -36,22 +64,26 @@ export default function MyProfilePage() {
     city: "",
     state_region: "",
     country: "",
-    timezone: "",
-    experience_level: "new",
+    experience_level: "brand_new",
     bio: "",
     willing_to_travel: false,
     has_vehicle: false,
-    availability_status: "available",
+    availability_status: "open",
     can_work_weekends: true,
     can_work_nights: true,
+    custom_skills: "",
   })
 
   const [roles, setRoles] = useState<Option[]>([])
   const [skills, setSkills] = useState<Option[]>([])
-  const [languages, setLanguages] = useState<Option[]>([])
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>([])
   const [selectedSkillIds, setSelectedSkillIds] = useState<number[]>([])
-  const [selectedLanguageIds, setSelectedLanguageIds] = useState<number[]>([])
+
+  const [languagePairs, setLanguagePairs] = useState([
+    { language: "", ability: "" },
+    { language: "", ability: "" },
+    { language: "", ability: "" },
+  ])
 
   const [existingHeadshotUrl, setExistingHeadshotUrl] = useState<string | null>(null)
   const [existingVideoUrl, setExistingVideoUrl] = useState<string | null>(null)
@@ -83,12 +115,10 @@ export default function MyProfilePage() {
         { data: ambassador, error: ambErr },
         { data: r },
         { data: s },
-        { data: l },
       ] = await Promise.all([
         supabase.from("ambassadors").select("*").eq("user_id", userId).single(),
         supabase.from("roles").select("id,name").order("name"),
         supabase.from("skills").select("id,name").order("name"),
-        supabase.from("languages").select("id,name").order("name"),
       ])
 
       if (ambErr || !ambassador) {
@@ -107,30 +137,35 @@ export default function MyProfilePage() {
         city: ambassador.city ?? "",
         state_region: ambassador.state_region ?? "",
         country: ambassador.country ?? "",
-        timezone: ambassador.timezone ?? "",
-        experience_level: ambassador.experience_level ?? "new",
+        experience_level: ambassador.experience_level ?? "brand_new",
         bio: ambassador.bio ?? "",
         willing_to_travel: ambassador.willing_to_travel ?? false,
         has_vehicle: ambassador.has_vehicle ?? false,
-        availability_status: ambassador.availability_status ?? "available",
+        availability_status: ambassador.availability_status ?? "open",
         can_work_weekends: ambassador.can_work_weekends ?? true,
         can_work_nights: ambassador.can_work_nights ?? true,
+        custom_skills: ambassador.custom_skills ?? "",
       })
+
+      // Load saved language entries (up to 3)
+      const entries: { language: string; ability: string }[] = ambassador.language_entries ?? []
+      setLanguagePairs([
+        entries[0] ?? { language: "", ability: "" },
+        entries[1] ?? { language: "", ability: "" },
+        entries[2] ?? { language: "", ability: "" },
+      ])
 
       setRoles((r as Option[]) ?? [])
       setSkills((s as Option[]) ?? [])
-      setLanguages((l as Option[]) ?? [])
 
       // Load existing join selections
-      const [{ data: ar }, { data: as_ }, { data: al }] = await Promise.all([
+      const [{ data: ar }, { data: as_ }] = await Promise.all([
         supabase.from("ambassador_roles").select("role_id").eq("ambassador_id", ambassador.id),
         supabase.from("ambassador_skills").select("skill_id").eq("ambassador_id", ambassador.id),
-        supabase.from("ambassador_languages").select("language_id").eq("ambassador_id", ambassador.id),
       ])
 
       setSelectedRoleIds((ar ?? []).map((x: { role_id: number }) => x.role_id))
       setSelectedSkillIds((as_ ?? []).map((x: { skill_id: number }) => x.skill_id))
-      setSelectedLanguageIds((al ?? []).map((x: { language_id: number }) => x.language_id))
 
       setLoading(false)
     }
@@ -253,6 +288,10 @@ export default function MyProfilePage() {
       setUploadStep("Saving your profile...")
       setUploadProgress(85)
 
+      const languageEntries = languagePairs
+        .filter((p) => p.language)
+        .map((p) => ({ language: p.language, ability: p.ability || "Beginner" }))
+
       const updatePayload: Record<string, unknown> = {
         ...form,
         first_name: form.first_name.trim(),
@@ -263,8 +302,9 @@ export default function MyProfilePage() {
         city: form.city.trim() || null,
         state_region: form.state_region.trim() || null,
         country: form.country.trim() || null,
-        timezone: form.timezone.trim() || null,
         bio: form.bio.trim() || null,
+        custom_skills: form.custom_skills.trim() || null,
+        language_entries: languageEntries,
         last_active_at: new Date().toISOString(),
         ...(headshotUrl ? { headshot_url: headshotUrl } : {}),
         ...(videoUrl ? { video_url: videoUrl } : {}),
@@ -283,7 +323,6 @@ export default function MyProfilePage() {
       await Promise.all([
         supabase.from("ambassador_roles").delete().eq("ambassador_id", ambassadorId),
         supabase.from("ambassador_skills").delete().eq("ambassador_id", ambassadorId),
-        supabase.from("ambassador_languages").delete().eq("ambassador_id", ambassadorId),
       ])
 
       const joins: Promise<unknown>[] = []
@@ -291,14 +330,12 @@ export default function MyProfilePage() {
         joins.push(Promise.resolve(supabase.from("ambassador_roles").insert(selectedRoleIds.map((role_id) => ({ ambassador_id: ambassadorId, role_id })))))
       if (selectedSkillIds.length)
         joins.push(Promise.resolve(supabase.from("ambassador_skills").insert(selectedSkillIds.map((skill_id) => ({ ambassador_id: ambassadorId, skill_id })))))
-      if (selectedLanguageIds.length)
-        joins.push(Promise.resolve(supabase.from("ambassador_languages").insert(selectedLanguageIds.map((language_id) => ({ ambassador_id: ambassadorId, language_id })))))
 
       await Promise.all(joins)
 
       setUploadProgress(100)
 
-      // Update local previews if new files were uploaded
+      // Update local state if new files were uploaded
       if (headshotUrl) setExistingHeadshotUrl(headshotUrl)
       if (videoUrl) setExistingVideoUrl(videoUrl)
       setNewHeadshotFile(null)
@@ -350,6 +387,7 @@ export default function MyProfilePage() {
       </div>
 
       <form onSubmit={save} className="space-y-5">
+        {/* Name & Contact */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium">First name <span className="text-red-500">*</span></label>
@@ -402,6 +440,7 @@ export default function MyProfilePage() {
           </div>
         </div>
 
+        {/* Location */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium">City</label>
@@ -451,17 +490,9 @@ export default function MyProfilePage() {
               />
             )}
           </div>
-          <div>
-            <label className="block text-sm font-medium">Timezone</label>
-            <input
-              className="mt-1 w-full border rounded-md p-2"
-              value={form.timezone}
-              onChange={(e) => update("timezone", e.target.value)}
-              placeholder="America/New_York"
-            />
-          </div>
         </div>
 
+        {/* Experience & Availability */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium">Experience level</label>
@@ -470,26 +501,27 @@ export default function MyProfilePage() {
               value={form.experience_level}
               onChange={(e) => update("experience_level", e.target.value)}
             >
-              <option value="new">New</option>
-              <option value="experienced">Experienced</option>
-              <option value="elite">Elite</option>
+              <option value="brand_new">Brand New</option>
+              <option value="little_experience">A Little Experience</option>
+              <option value="more_than_a_year">More Than A Year</option>
+              <option value="industry_vet">Industry Vet</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Availability status</label>
+            <label className="block text-sm font-medium">Availability</label>
             <select
               className="mt-1 w-full border rounded-md p-2"
               value={form.availability_status}
               onChange={(e) => update("availability_status", e.target.value)}
             >
-              <option value="available">Available</option>
+              <option value="open">Open</option>
               <option value="limited">Limited</option>
-              <option value="unavailable">Unavailable</option>
             </select>
           </div>
         </div>
 
+        {/* Checkboxes */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -525,6 +557,7 @@ export default function MyProfilePage() {
           </label>
         </div>
 
+        {/* Roles */}
         <div className="border rounded-lg p-4">
           <div className="font-medium">Roles</div>
           <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -541,6 +574,7 @@ export default function MyProfilePage() {
           </div>
         </div>
 
+        {/* Skills */}
         <div className="border rounded-lg p-4">
           <div className="font-medium">Skills</div>
           <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -555,24 +589,64 @@ export default function MyProfilePage() {
               </label>
             ))}
           </div>
+          <div className="mt-3 pt-3 border-t">
+            <label className="block text-sm font-medium text-gray-700">Other (add your own)</label>
+            <input
+              className="mt-1 w-full border rounded-md p-2 text-sm"
+              value={form.custom_skills}
+              onChange={(e) => update("custom_skills", e.target.value)}
+              placeholder="e.g. Stilt walking, Balloon art"
+            />
+          </div>
         </div>
 
+        {/* Languages */}
         <div className="border rounded-lg p-4">
-          <div className="font-medium">Languages</div>
-          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {languages.map((opt) => (
-              <label key={opt.id} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={selectedLanguageIds.includes(opt.id)}
-                  onChange={(e) => setSelectedLanguageIds((prev) => toggle(prev, opt.id, e.target.checked))}
-                />
-                {opt.name}
-              </label>
+          <div className="font-medium mb-3">Languages</div>
+          <div className="space-y-3">
+            {languagePairs.map((pair, i) => (
+              <div key={i} className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Language {i + 1}</label>
+                  <select
+                    className="w-full border rounded-md p-2 text-sm"
+                    value={pair.language}
+                    onChange={(e) => {
+                      const updated = [...languagePairs]
+                      updated[i] = { ...updated[i], language: e.target.value }
+                      setLanguagePairs(updated)
+                    }}
+                  >
+                    <option value="">Select language…</option>
+                    {MAJOR_LANGUAGES.map((lang) => (
+                      <option key={lang} value={lang}>{lang}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Ability</label>
+                  <select
+                    className="w-full border rounded-md p-2 text-sm"
+                    value={pair.ability}
+                    onChange={(e) => {
+                      const updated = [...languagePairs]
+                      updated[i] = { ...updated[i], ability: e.target.value }
+                      setLanguagePairs(updated)
+                    }}
+                    disabled={!pair.language}
+                  >
+                    <option value="">Select level…</option>
+                    {ABILITY_LEVELS.map((level) => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             ))}
           </div>
         </div>
 
+        {/* Bio */}
         <div>
           <label className="block text-sm font-medium">Bio</label>
           <textarea
