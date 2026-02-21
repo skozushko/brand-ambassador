@@ -18,9 +18,6 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Live BA Map Dashboard */}
-        <MapLoader />
-
         {/* Welcome Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold mb-4">JOIN THE BA DATABASE</h1>
@@ -163,6 +160,11 @@ export default function Home() {
             </p>
           </div>
 
+        </div>
+
+        {/* Live BA Map Dashboard */}
+        <div className="mt-12">
+          <MapLoader />
         </div>
       </div>
     </main>

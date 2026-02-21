@@ -41,8 +41,6 @@ export default function RevealContact({ ambassadorId }: { ambassadorId: string }
 
     const { data, error } = await supabase.rpc("reveal_contact", { p_ambassador_id: ambassadorId })
 
-    console.log("[RevealContact] RPC response:", { data, error })
-
     if (error) {
       const msg =
         error.message.includes("no_active_subscription")

@@ -50,13 +50,17 @@ const COUNTRY_TO_CONTINENT: Record<string, string> = {
   Slovakia: "Europe", Slovenia: "Europe", Spain: "Europe", Sweden: "Europe",
   Switzerland: "Europe", Ukraine: "Europe", "United Kingdom": "Europe",
 
-  // North America
-  Bahamas: "North America", Belize: "North America", Canada: "North America",
+  // Subscription regions — US, Canada, Mexico each stand alone
+  "United States": "United States",
+  Canada: "Canada",
+  Mexico: "Mexico",
+
+  // Central America & Caribbean (grouped as "North America" on the map)
+  Bahamas: "North America", Belize: "North America",
   "Costa Rica": "North America", Cuba: "North America",
   "Dominican Republic": "North America", "El Salvador": "North America",
   Guatemala: "North America", Haiti: "North America", Honduras: "North America",
-  Jamaica: "North America", Mexico: "North America", Nicaragua: "North America",
-  Panama: "North America", "United States": "North America",
+  Jamaica: "North America", Nicaragua: "North America", Panama: "North America",
 
   // South America
   Argentina: "South America", Bolivia: "South America", Brazil: "South America",
