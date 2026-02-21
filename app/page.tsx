@@ -1,4 +1,7 @@
 import Link from "next/link"
+import dynamic from "next/dynamic"
+
+const WorldMapDashboard = dynamic(() => import("@/components/WorldMapDashboard"), { ssr: false })
 
 export default function Home() {
   return (
@@ -16,6 +19,9 @@ export default function Home() {
             Agency Login
           </Link>
         </div>
+
+        {/* Live BA Map Dashboard */}
+        <WorldMapDashboard />
 
         {/* Welcome Section */}
         <div className="text-center mb-16">
