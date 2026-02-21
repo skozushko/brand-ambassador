@@ -71,6 +71,7 @@ export default function SignupPage() {
       }
       setAuthUserId(userId)
       setAuthEmail(data.session.user.email ?? "")
+      setAuthChecked(true)
     }
     init()
   }, [])
@@ -120,6 +121,7 @@ export default function SignupPage() {
     type: "idle",
   })
   const [loading, setLoading] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
 
   const update = (k: string, v: unknown) => setForm((p) => ({ ...p, [k]: v }))
 
@@ -411,6 +413,14 @@ export default function SignupPage() {
 
     setUploadProgress(100)
     window.location.href = "/my-profile"
+  }
+
+  if (!authChecked) {
+    return (
+      <main className="p-8">
+        <p className="text-gray-500">Loading…</p>
+      </main>
+    )
   }
 
   return (
