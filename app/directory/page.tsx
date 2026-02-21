@@ -223,7 +223,8 @@ export default async function DirectoryPage({
   if (q) {
     query = query.or(
       [
-        `full_name.ilike.%${q}%`,
+        `first_name.ilike.%${q}%`,
+        `last_name.ilike.%${q}%`,
         `city.ilike.%${q}%`,
         `state_region.ilike.%${q}%`,
         `country.ilike.%${q}%`,
@@ -329,13 +330,13 @@ export default async function DirectoryPage({
                   {a.headshot_url && (
                     <img
                       src={a.headshot_url}
-                      alt={a.full_name}
+                      alt={`${a.first_name} ${a.last_name}`}
                       className="w-16 h-16 rounded-full object-cover border flex-shrink-0"
                     />
                   )}
                   <div className="flex-1 flex items-start justify-between gap-4">
                     <div>
-                      <div className="font-semibold text-lg">{a.full_name}</div>
+                      <div className="font-semibold text-lg">{a.first_name} {a.last_name}</div>
                       <div className="text-sm text-gray-600 mt-1">
                         {(a.city ? `${a.city}, ` : "") +
                           (a.state_region ? `${a.state_region}, ` : "") +

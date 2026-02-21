@@ -99,11 +99,9 @@ export default function MyProfilePage() {
       setAmbassadorId(ambassador.id)
       setExistingHeadshotUrl(ambassador.headshot_url ?? null)
       setExistingVideoUrl(ambassador.video_url ?? null)
-      const fullName = ambassador.full_name ?? ""
-      const spaceIdx = fullName.indexOf(" ")
       setForm({
-        first_name: spaceIdx >= 0 ? fullName.slice(0, spaceIdx) : fullName,
-        last_name: spaceIdx >= 0 ? fullName.slice(spaceIdx + 1) : "",
+        first_name: ambassador.first_name ?? "",
+        last_name: ambassador.last_name ?? "",
         phone_number: ambassador.phone_number ?? "",
         instagram_handle: ambassador.instagram_handle ?? "",
         city: ambassador.city ?? "",
@@ -257,7 +255,8 @@ export default function MyProfilePage() {
 
       const updatePayload: Record<string, unknown> = {
         ...form,
-        full_name: `${form.first_name.trim()} ${form.last_name.trim()}`,
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
         email: authEmail.trim().toLowerCase(),
         instagram_handle: form.instagram_handle.replace(/^@/, "").trim() || null,
         phone_number: form.phone_number.trim() || null,

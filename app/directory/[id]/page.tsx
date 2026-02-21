@@ -49,13 +49,13 @@ export default async function Page({
           {ambassador.headshot_url && (
             <img
               src={ambassador.headshot_url}
-              alt={ambassador.full_name}
+              alt={`${ambassador.first_name} ${ambassador.last_name}`}
               className="w-28 h-28 rounded-full object-cover border flex-shrink-0"
             />
           )}
           <div className="flex-1 flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold">{ambassador.full_name}</h1>
+              <h1 className="text-3xl font-bold">{ambassador.first_name} {ambassador.last_name}</h1>
               <div className="text-gray-600 mt-2">
                 {ambassador.city && `${ambassador.city}, `}
                 {ambassador.state_region && `${ambassador.state_region}, `}
