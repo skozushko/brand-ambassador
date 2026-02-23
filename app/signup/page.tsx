@@ -89,8 +89,8 @@ export default function SignupPage() {
     willing_to_travel: false,
     has_vehicle: false,
     availability_status: "open",
-    can_work_weekends: true,
-    can_work_nights: true,
+    can_work_weekends: false,
+    can_work_nights: false,
     custom_skills: "",
   })
 
