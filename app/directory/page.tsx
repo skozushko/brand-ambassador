@@ -12,6 +12,19 @@ import { syncSubscriptionFromCheckoutSession } from "@/lib/stripe-subscriptions"
 import { getAllowedCountries } from "@/lib/region-countries"
 import { US_STATES, CANADA_PROVINCES } from "@/lib/geo-data"
 
+const EXPERIENCE_LABELS: Record<string, string> = {
+  brand_new: "Brand New",
+  a_little_experience: "A Little Experience",
+  little_experience: "A Little Experience",
+  more_than_a_year: "More Than A Year",
+  industry_vet: "Industry Vet",
+}
+const AVAILABILITY_LABELS: Record<string, string> = {
+  open: "Open",
+  limited: "Limited",
+  unavailable: "Unavailable",
+}
+
 type SearchParams = Record<string, string | string[] | undefined>
 
 function toArray(v: string | string[] | undefined): string[] {
@@ -350,8 +363,8 @@ export default async function DirectoryPage({
                     </div>
 
                     <div className="text-right text-sm text-gray-600">
-                      <div>{a.experience_level ?? ""}</div>
-                      <div className="mt-1">{a.availability_status ?? ""}</div>
+                      <div>{EXPERIENCE_LABELS[a.experience_level] ?? a.experience_level ?? ""}</div>
+                      <div className="mt-1">{AVAILABILITY_LABELS[a.availability_status] ?? a.availability_status ?? ""}</div>
                     </div>
                   </div>
                 </div>

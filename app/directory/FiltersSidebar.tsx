@@ -96,9 +96,10 @@ export default function FiltersSidebar(props: {
           <label className="block text-sm font-medium">Experience</label>
           <select name="experience" defaultValue={props.defaultExperience} className="mt-1 w-full border rounded-md p-2">
             <option value="">All</option>
-            <option value="new">New</option>
-            <option value="experienced">Experienced</option>
-            <option value="elite">Elite</option>
+            <option value="brand_new">Brand New</option>
+            <option value="a_little_experience">A Little Experience</option>
+            <option value="more_than_a_year">More Than A Year</option>
+            <option value="industry_vet">Industry Vet</option>
           </select>
         </div>
 
@@ -106,9 +107,8 @@ export default function FiltersSidebar(props: {
           <label className="block text-sm font-medium">Availability</label>
           <select name="availability" defaultValue={props.defaultAvailability} className="mt-1 w-full border rounded-md p-2">
             <option value="">All</option>
-            <option value="available">Available</option>
+            <option value="open">Open</option>
             <option value="limited">Limited</option>
-            <option value="unavailable">Unavailable</option>
           </select>
         </div>
 
