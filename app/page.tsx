@@ -163,6 +163,45 @@ export default function Home() {
         <div className="mt-12">
           <MapLoader />
         </div>
+
+        {/* Agencies Section */}
+        <div className="mt-16">
+          <div className="text-center mb-10">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Trusted by agencies worldwide</p>
+            <h2 className="text-2xl font-bold text-gray-900">Staffing Agencies Searching Our Network</h2>
+            <p className="text-gray-500 mt-2">These agencies use the BA Database to find talent for their clients.</p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {[
+              { name: "Apex Brand Solutions",      initials: "AB", city: "New York, NY",        bg: "#3B82F6" },
+              { name: "Elite Event Staffing",       initials: "EE", city: "Los Angeles, CA",     bg: "#8B5CF6" },
+              { name: "Momentum Marketing Group",   initials: "MM", city: "Chicago, IL",         bg: "#F97316" },
+              { name: "Pinnacle Promo Network",     initials: "PP", city: "Miami, FL",           bg: "#EF4444" },
+              { name: "Catalyst Brand Agency",      initials: "CB", city: "Austin, TX",          bg: "#10B981" },
+              { name: "Summit Experiential",        initials: "SE", city: "Toronto, ON",         bg: "#14B8A6" },
+              { name: "Vanguard Staffing Co.",      initials: "VS", city: "London, UK",          bg: "#6366F1" },
+              { name: "Atlas Event Group",          initials: "AE", city: "Sydney, AU",          bg: "#F59E0B" },
+              { name: "Nexus Brand Partners",       initials: "NB", city: "Vancouver, BC",       bg: "#EC4899" },
+              { name: "Meridian Staffing Group",    initials: "MS", city: "Dallas, TX",          bg: "#06B6D4" },
+            ].map((agency) => (
+              <div
+                key={agency.name}
+                className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-lg mb-3 flex-shrink-0"
+                  style={{ backgroundColor: agency.bg }}
+                >
+                  {agency.initials}
+                </div>
+                <div className="text-sm font-semibold text-gray-800 leading-tight">{agency.name}</div>
+                <div className="text-xs text-gray-400 mt-1">{agency.city}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </main>
   )
