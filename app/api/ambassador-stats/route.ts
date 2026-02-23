@@ -13,14 +13,20 @@ const COUNTRY_TO_CONTINENT: Record<string, string> = {
   // Africa
   Algeria: "Africa", Angola: "Africa", Benin: "Africa", Botswana: "Africa",
   "Burkina Faso": "Africa", Burundi: "Africa", Cameroon: "Africa",
-  "Central African Republic": "Africa", Chad: "Africa", Congo: "Africa",
-  Egypt: "Africa", Ethiopia: "Africa", Gabon: "Africa", Ghana: "Africa",
-  Guinea: "Africa", Kenya: "Africa", Libya: "Africa", Madagascar: "Africa",
-  Malawi: "Africa", Mali: "Africa", Morocco: "Africa", Mozambique: "Africa",
+  "Central African Republic": "Africa", Chad: "Africa",
+  Comoros: "Africa", Congo: "Africa", "DR Congo": "Africa", "Democratic Republic of the Congo": "Africa",
+  Djibouti: "Africa", Egypt: "Africa", Eritrea: "Africa", Eswatini: "Africa",
+  Ethiopia: "Africa", Gabon: "Africa", Gambia: "Africa", Ghana: "Africa",
+  Guinea: "Africa", "Guinea-Bissau": "Africa", "Ivory Coast": "Africa", "Côte d'Ivoire": "Africa",
+  Kenya: "Africa", Lesotho: "Africa", Liberia: "Africa", Libya: "Africa",
+  Madagascar: "Africa", Malawi: "Africa", Mali: "Africa", Mauritania: "Africa",
+  Mauritius: "Africa", Morocco: "Africa", Mozambique: "Africa",
   Namibia: "Africa", Niger: "Africa", Nigeria: "Africa", Rwanda: "Africa",
-  Senegal: "Africa", Somalia: "Africa", "South Africa": "Africa",
-  "South Sudan": "Africa", Sudan: "Africa", Tanzania: "Africa", Togo: "Africa",
-  Tunisia: "Africa", Uganda: "Africa", Zambia: "Africa", Zimbabwe: "Africa",
+  "São Tomé and Príncipe": "Africa", Senegal: "Africa", "Sierra Leone": "Africa",
+  Somalia: "Africa", "South Africa": "Africa", "South Sudan": "Africa",
+  Sudan: "Africa", Tanzania: "Africa", Togo: "Africa",
+  Tunisia: "Africa", Uganda: "Africa", "Western Sahara": "Africa",
+  Zambia: "Africa", Zimbabwe: "Africa",
 
   // Asia
   Afghanistan: "Asia", Armenia: "Asia", Azerbaijan: "Asia", Bahrain: "Asia",
@@ -56,11 +62,14 @@ const COUNTRY_TO_CONTINENT: Record<string, string> = {
   Mexico: "Mexico",
 
   // Central America & Caribbean (grouped as "North America" on the map)
-  Bahamas: "North America", Belize: "North America",
+  Bahamas: "North America", Barbados: "North America", Belize: "North America",
   "Costa Rica": "North America", Cuba: "North America",
   "Dominican Republic": "North America", "El Salvador": "North America",
-  Guatemala: "North America", Haiti: "North America", Honduras: "North America",
-  Jamaica: "North America", Nicaragua: "North America", Panama: "North America",
+  Grenada: "North America", Guatemala: "North America", Haiti: "North America",
+  Honduras: "North America", Jamaica: "North America", Nicaragua: "North America",
+  Panama: "North America", "Trinidad and Tobago": "North America",
+  "Saint Kitts and Nevis": "North America", "Saint Lucia": "North America",
+  "Saint Vincent and the Grenadines": "North America",
 
   // South America
   Argentina: "South America", Bolivia: "South America", Brazil: "South America",
@@ -70,6 +79,10 @@ const COUNTRY_TO_CONTINENT: Record<string, string> = {
 
   // Oceania
   Australia: "Oceania", "New Zealand": "Oceania",
+  Fiji: "Oceania", Kiribati: "Oceania", "Marshall Islands": "Oceania",
+  Micronesia: "Oceania", Nauru: "Oceania", Palau: "Oceania",
+  "Papua New Guinea": "Oceania", Samoa: "Oceania", "Solomon Islands": "Oceania",
+  Tonga: "Oceania", Tuvalu: "Oceania", Vanuatu: "Oceania",
 }
 
 export async function GET() {
@@ -89,8 +102,8 @@ export async function GET() {
     byContinent[continent] = (byContinent[continent] ?? 0) + 1
   }
 
-  return NextResponse.json({
-    total: (data ?? []).length,
-    byContinent,
-  })
+  return NextResponse.json(
+    { total: (data ?? []).length, byContinent },
+    { headers: { "Cache-Control": "no-store" } }
+  )
 }
