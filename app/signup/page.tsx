@@ -532,14 +532,14 @@ export default function SignupPage() {
               </>
             ) : form.country === "Canada" ? (
               <>
-                <label className="block text-sm font-medium">Province <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium">Province / Territory <span className="text-red-500">*</span></label>
                 <select
                   className="mt-1 w-full border rounded-md p-2"
                   value={form.state_region}
                   onChange={(e) => update("state_region", e.target.value)}
                   required
                 >
-                  <option value="">Select province…</option>
+                  <option value="">Select province or territory…</option>
                   {CANADA_PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
                 </select>
               </>

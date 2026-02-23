@@ -478,7 +478,7 @@ export default function MyProfilePage() {
                 value={form.state_region}
                 onChange={(e) => update("state_region", e.target.value)}
               >
-                <option value="">Select province…</option>
+                <option value="">Select province or territory…</option>
                 {CANADA_PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
               </select>
             ) : (
