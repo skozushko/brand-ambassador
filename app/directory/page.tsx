@@ -10,6 +10,7 @@ import { getSupabase } from "@/lib/supabase"
 import { getServerSupabase } from "@/lib/supabase-server"
 import { syncSubscriptionFromCheckoutSession } from "@/lib/stripe-subscriptions"
 import { getAllowedCountries } from "@/lib/region-countries"
+import { US_STATES, CANADA_PROVINCES } from "@/lib/geo-data"
 
 type SearchParams = Record<string, string | string[] | undefined>
 
@@ -188,6 +189,10 @@ export default async function DirectoryPage({
     if (!statesByCountry.has(c)) statesByCountry.set(c, new Set())
     if (s) statesByCountry.get(c)!.add(s)
   })
+
+  // Always use canonical full-name lists for US and Canada instead of raw DB values
+  if (countrySet.has("United States")) statesByCountry.set("United States", new Set(US_STATES))
+  if (countrySet.has("Canada")) statesByCountry.set("Canada", new Set(CANADA_PROVINCES))
 
   const countryOptions = Array.from(countrySet).sort((a, b) => a.localeCompare(b))
   const stateOptions =
