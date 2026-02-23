@@ -335,6 +335,7 @@ export default function SignupPage() {
         ...form,
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
+        full_name: `${form.first_name.trim()} ${form.last_name.trim()}`,
         email: authEmail.trim().toLowerCase(),
         instagram_handle: form.instagram_handle.replace(/^@/, "").trim() || null,
         phone_number: form.phone_number.trim() || null,
