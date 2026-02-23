@@ -38,6 +38,9 @@ export const US_STATES = [
   "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
   "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
   "West Virginia", "Wisconsin", "Wyoming", "District of Columbia",
+  // Territories
+  "American Samoa", "Guam", "Northern Mariana Islands", "Puerto Rico",
+  "U.S. Virgin Islands",
 ]
 
 export const CANADA_PROVINCES = [

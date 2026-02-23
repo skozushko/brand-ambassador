@@ -277,8 +277,8 @@ export default function SignupPage() {
       setLoading(false)
       return
     }
-    if (!form.state_region.trim()) {
-      setStatus({ type: "error", msg: "State / Province / Region is required." })
+    if ((form.country === "United States" || form.country === "Canada") && !form.state_region.trim()) {
+      setStatus({ type: "error", msg: "State / Province is required." })
       setLoading(false)
       return
     }
@@ -516,35 +516,42 @@ export default function SignupPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium">State / Province / Region <span className="text-red-500">*</span></label>
             {form.country === "United States" ? (
-              <select
-                className="mt-1 w-full border rounded-md p-2"
-                value={form.state_region}
-                onChange={(e) => update("state_region", e.target.value)}
-                required
-              >
-                <option value="">Select state…</option>
-                {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <>
+                <label className="block text-sm font-medium">State <span className="text-red-500">*</span></label>
+                <select
+                  className="mt-1 w-full border rounded-md p-2"
+                  value={form.state_region}
+                  onChange={(e) => update("state_region", e.target.value)}
+                  required
+                >
+                  <option value="">Select state or territory…</option>
+                  {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </>
             ) : form.country === "Canada" ? (
-              <select
-                className="mt-1 w-full border rounded-md p-2"
-                value={form.state_region}
-                onChange={(e) => update("state_region", e.target.value)}
-                required
-              >
-                <option value="">Select province…</option>
-                {CANADA_PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
+              <>
+                <label className="block text-sm font-medium">Province <span className="text-red-500">*</span></label>
+                <select
+                  className="mt-1 w-full border rounded-md p-2"
+                  value={form.state_region}
+                  onChange={(e) => update("state_region", e.target.value)}
+                  required
+                >
+                  <option value="">Select province…</option>
+                  {CANADA_PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </>
             ) : (
-              <input
-                className="mt-1 w-full border rounded-md p-2"
-                value={form.state_region}
-                onChange={(e) => update("state_region", e.target.value)}
-                placeholder="State / province / region"
-                required
-              />
+              <>
+                <label className="block text-sm font-medium">Province / Region <span className="text-gray-400 font-normal">(optional)</span></label>
+                <input
+                  className="mt-1 w-full border rounded-md p-2"
+                  value={form.state_region}
+                  onChange={(e) => update("state_region", e.target.value)}
+                  placeholder="Province, region, or state"
+                />
+              </>
             )}
           </div>
         </div>
