@@ -50,6 +50,7 @@ function fileExt(file: File) {
 export default function SignupPage() {
   const [authUserId, setAuthUserId] = useState<string | null>(null)
   const [authEmail, setAuthEmail] = useState<string>("")
+  const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -413,13 +414,39 @@ export default function SignupPage() {
     }
 
     setUploadProgress(100)
-    window.location.href = "/my-profile"
+    setSubmitted(true)
+    setTimeout(() => { window.location.href = "/my-profile" }, 4000)
   }
 
   if (!authChecked) {
     return (
       <main className="p-8">
         <p className="text-gray-500">Loading…</p>
+      </main>
+    )
+  }
+
+  if (submitted) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-10 max-w-md w-full text-center">
+          <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
+            <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">You&apos;re in the database!</h2>
+          <p className="text-gray-500 mb-6">
+            Your profile has been uploaded successfully. Staffing agencies can now discover you in the directory.
+          </p>
+          <a
+            href="/my-profile"
+            className="inline-block bg-black text-white font-semibold px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            View My Profile
+          </a>
+          <p className="text-xs text-gray-400 mt-4">Redirecting automatically in a few seconds…</p>
+        </div>
       </main>
     )
   }
