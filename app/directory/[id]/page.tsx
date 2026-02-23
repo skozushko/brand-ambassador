@@ -2,6 +2,20 @@ import Link from "next/link"
 import { getSupabase } from "@/lib/supabase"
 import RevealContact from "./reveal-contact"
 
+const EXPERIENCE_LABELS: Record<string, string> = {
+  brand_new: "Brand New",
+  a_little_experience: "A Little Experience",
+  little_experience: "A Little Experience",
+  more_than_a_year: "More Than A Year",
+  industry_vet: "Industry Vet",
+}
+
+const AVAILABILITY_LABELS: Record<string, string> = {
+  open: "Open",
+  limited: "Limited",
+  unavailable: "Unavailable",
+}
+
 export default async function Page({
   params,
 }: {
@@ -64,8 +78,8 @@ export default async function Page({
             </div>
 
             <div className="text-right text-gray-600">
-              <div>{ambassador.experience_level}</div>
-              <div className="mt-1">{ambassador.availability_status}</div>
+              <div>{EXPERIENCE_LABELS[ambassador.experience_level] ?? ambassador.experience_level}</div>
+              <div className="mt-1">{AVAILABILITY_LABELS[ambassador.availability_status] ?? ambassador.availability_status}</div>
             </div>
           </div>
         </div>
