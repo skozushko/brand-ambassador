@@ -161,6 +161,7 @@ export default async function DirectoryPage({
   // ----- Location dropdown filters -----
   const country = toStr(sp.country).trim()
   const state = toStr(sp.state).trim()
+  const city = toStr(sp.city).trim()
 
   // ----- Match mode: ANY vs ALL -----
   // any = overlaps (has at least one selected)
@@ -185,22 +186,26 @@ export default async function DirectoryPage({
   // (For 100k+ we’ll replace this with a materialized view / distinct RPC)
   const { data: locRows } = await supabase
     .from("ambassadors")
-    .select("country,state_region")
+    .select("country,state_region,city")
     .limit(5000)
 
   const countrySet = new Set<string>()
   const statesByCountry = new Map<string, Set<string>>()
+  const citiesByCountry = new Map<string, Set<string>>()
 
   const allowedSet = new Set(allowedCountries)
 
   ;(locRows ?? []).forEach((r: any) => {
     const c = (r.country ?? "").trim()
     const s = (r.state_region ?? "").trim()
+    const ci = (r.city ?? "").trim()
     if (!c) return
     if (allowedSet.size > 0 && !allowedSet.has(c)) return
     countrySet.add(c)
     if (!statesByCountry.has(c)) statesByCountry.set(c, new Set())
     if (s) statesByCountry.get(c)!.add(s)
+    if (!citiesByCountry.has(c)) citiesByCountry.set(c, new Set())
+    if (ci) citiesByCountry.get(c)!.add(ci)
   })
 
   // Always use canonical full-name lists for US and Canada instead of raw DB values
@@ -232,6 +237,7 @@ export default async function DirectoryPage({
 
   if (country) query = query.eq("country", country)
   if (state) query = query.eq("state_region", state)
+  if (city) query = query.eq("city", city)
 
   // Match ANY vs ALL
   if (roleIds.length) query = isAll ? query.contains("role_ids", roleIds) : query.overlaps("role_ids", roleIds)
@@ -291,10 +297,14 @@ export default async function DirectoryPage({
   statesByCountry={Object.fromEntries(
     Array.from(statesByCountry.entries()).map(([c, set]) => [c, Array.from(set).sort((a, b) => a.localeCompare(b))])
   )}
+  citiesByCountry={Object.fromEntries(
+    Array.from(citiesByCountry.entries()).map(([c, set]) => [c, Array.from(set).sort((a, b) => a.localeCompare(b))])
+  )}
   defaultQ={q}
   defaultMatch={matchMode as any}
   defaultCountry={country}
   defaultState={state}
+  defaultCity={city}
   defaultExperience={experience}
   defaultAvailability={availability}
   defaultVehicle={hasVehicle}

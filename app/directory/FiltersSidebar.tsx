@@ -12,12 +12,14 @@ export default function FiltersSidebar(props: {
   languages: Option[]
   countryOptions: string[]
   statesByCountry: Record<string, string[]>
+  citiesByCountry: Record<string, string[]>
 
   // defaults (from URL)
   defaultQ: string
   defaultMatch: "any" | "all"
   defaultCountry: string
   defaultState: string
+  defaultCity: string
   defaultExperience: string
   defaultAvailability: string
   defaultVehicle: boolean
@@ -33,6 +35,11 @@ export default function FiltersSidebar(props: {
     if (!country) return []
     return props.statesByCountry[country] ?? []
   }, [country, props.statesByCountry])
+
+  const cityOptions = useMemo(() => {
+    if (!country) return []
+    return props.citiesByCountry[country] ?? []
+  }, [country, props.citiesByCountry])
 
   return (
     <aside className="border rounded-lg p-4 h-fit">
@@ -86,9 +93,24 @@ export default function FiltersSidebar(props: {
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
-            <div className="text-xs text-gray-600 mt-1">
-              {country ? "Now choose a region." : "Pick a country first."}
-            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">City</label>
+            <select
+              name="city"
+              defaultValue={props.defaultCity}
+              className="mt-1 w-full border rounded-md p-2"
+              disabled={!country}
+            >
+              <option value="">All</option>
+              {cityOptions.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            {!country && (
+              <div className="text-xs text-gray-400 mt-1">Pick a country first.</div>
+            )}
           </div>
         </div>
 
